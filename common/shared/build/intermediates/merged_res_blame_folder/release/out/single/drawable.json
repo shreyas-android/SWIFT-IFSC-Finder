@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.jackson.shared.domain.bankdetail.shared-merged_res-36:/drawable/notification_bg_low.xml",
+        "source": "com.jackson.shared.domain.bankdetail.shared-core-1.11.0-beta02-32:/drawable/notification_bg_low.xml"
+    },
+    {
+        "merged": "com.jackson.shared.domain.bankdetail.shared-merged_res-36:/drawable/notification_tile_bg.xml",
+        "source": "com.jackson.shared.domain.bankdetail.shared-core-1.11.0-beta02-32:/drawable/notification_tile_bg.xml"
+    },
+    {
+        "merged": "com.jackson.shared.domain.bankdetail.shared-merged_res-36:/drawable/notification_bg.xml",
+        "source": "com.jackson.shared.domain.bankdetail.shared-core-1.11.0-beta02-32:/drawable/notification_bg.xml"
+    },
+    {
+        "merged": "com.jackson.shared.domain.bankdetail.shared-merged_res-36:/drawable/notification_icon_background.xml",
+        "source": "com.jackson.shared.domain.bankdetail.shared-core-1.11.0-beta02-32:/drawable/notification_icon_background.xml"
+    }
+]

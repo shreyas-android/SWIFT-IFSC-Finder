@@ -1,0 +1,1 @@
+com.jackson.shared.api.bankdetail

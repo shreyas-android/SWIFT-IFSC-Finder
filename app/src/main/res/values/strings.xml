@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Swift IFSC Finder</string>
+
+    <string name="title_city">City</string>
+    <string name="title_state">State</string>
+    <string name="title_district">District</string>
+    <string name="title_bank_code">Bank code</string>
+    <string name="title_ifsc_code">IFSC code</string>
+    <string name="title_branch">Branch</string>
+    <string name="title_bank_name">Bank name</string>
+
+    <string name="title_banks">Banks</string>
+    <string name="desc_no_results">No results found</string>
+
+    <string name="title_swift_code">Swift code</string>
+
+    <string name="desc_back_button">Back button</string>
+    <string name="desc_code_copied">Code copied</string>
+    <string name="label_get_swift_code">Get Swift code</string>
+</resources>

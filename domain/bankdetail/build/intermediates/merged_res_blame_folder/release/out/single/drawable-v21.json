@@ -1,0 +1,6 @@
+[
+    {
+        "merged": "com.jackson.shared.domain.bankdetail-merged_res-41:/drawable-v21/notification_action_background.xml",
+        "source": "com.jackson.shared.domain.bankdetail-core-1.11.0-beta02-34:/drawable-v21/notification_action_background.xml"
+    }
+]

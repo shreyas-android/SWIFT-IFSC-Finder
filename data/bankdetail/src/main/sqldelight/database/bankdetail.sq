@@ -1,0 +1,64 @@
+insertBankDetail:
+INSERT OR REPLACE INTO BankDetail(
+                                       bankId ,
+                                       bankName,
+                                       city ,
+                                       state ,
+                                       centre ,
+                                       swiftCode ,
+                                       branch ,
+                                       district ,
+                                       contact ,
+                                       address ,
+                                       bankCode,
+                                       IFSCCode,
+                                       ISO3166,
+                                       MICR ,
+                                       priority,
+                                       isSupportUPI,
+                                       isSupportNEFT,
+                                       isSupportRTGS,
+                                       isSupportIMPS, isEnabled)
+VALUES (?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?);
+
+getBankDetailByBank:
+SELECT * FROM BankDetail WHERE bankId = :bankId;
+
+getEnabledBankDetails:
+SELECT * FROM BankDetail WHERE isEnabled = 1;
+
+getEnabledBankDetailsByOffset:
+SELECT * FROM BankDetail WHERE isEnabled = 1 ORDER BY priority LIMIT :limit OFFSET :offset;
+
+
+countBankDetails:
+SELECT count(*) FROM BankDetail WHERE isEnabled = 1;
+
+countFilteredBankDetails:
+SELECT count(*) FROM BankDetail WHERE isEnabled = 1 AND bankName LIKE '%' || :bankName || '%' AND city LIKE '%' || :city || '%'
+ AND state LIKE '%' || :state || '%' AND district LIKE '%' || :district || '%' AND IFSCCode LIKE '%' || :ifscCode || '%'
+ AND bankCode LIKE '%' || :bankCode || '%' AND branch LIKE '%' || :branch || '%' ;
+
+updateBankEnabled:
+UPDATE BankDetail SET isEnabled = ? WHERE bankId = ?;
+
+updateBankSwiftCode:
+UPDATE BankDetail SET swiftCode = ? WHERE IFSCCode = ?;
+
+getFilteredBankDetails:
+SELECT * FROM BankDetail WHERE isEnabled = 1 AND bankName LIKE '%' || :bankName || '%' AND city LIKE '%' || :city || '%'
+ AND state LIKE '%' || :state || '%' AND district LIKE '%' || :district || '%' AND IFSCCode LIKE '%' || :ifscCode || '%'
+ AND bankCode LIKE '%' || :bankCode || '%' AND branch LIKE '%' || :branch || '%' ORDER BY priority  LIMIT :limit OFFSET :offset;
+
+
+
+
+
+
+
+
+
+
+
+
+

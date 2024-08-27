@@ -1,0 +1,83 @@
+[versions]
+agp = "8.2.2"
+kotlin = "1.9.20"
+coreKtx = "1.13.1"
+junit = "4.13.2"
+junitVersion = "1.2.1"
+espressoCore = "3.6.1"
+appcompat = "1.7.0"
+material = "1.12.0"
+ktor = "2.2.4"
+kotlinCoroutines = "1.7.3"
+atomicfuVersion = "0.21.0"
+composeVersion = "1.4.0"
+compose-bom = "2024.06.00"
+composecompiler = "1.4.7"
+composeNavigation = "2.7.7"
+activityCompose = "1.9.0"
+composeFoundation = "1.6.8"
+composeViewmodel = "2.8.3"
+composeConstraint = "1.0.1"
+materialVersion = "1.6.8"
+material3Version = "1.2.1"
+sqlDelightVersion = "2.0.1"
+
+
+
+
+[libraries]
+androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
+androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+
+#KTOR
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-ios = { module = "io.ktor:ktor-client-ios", version.ref = "ktor" }
+
+kotlin-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinCoroutines" }
+
+atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfuVersion" }
+
+compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
+compose-constraint-layout = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "composeConstraint" }
+compose-animation-animation = { module = "androidx.compose.animation:animation" }
+compose-foundation-foundation = { module = "androidx.compose.foundation:foundation", version.ref = "composeFoundation" }
+compose-foundation-layout = { module = "androidx.compose.foundation:foundation-layout", version.ref = "composeFoundation" }
+compose-material-material = { module = "androidx.compose.material:material", version.ref = "materialVersion" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3Version" }
+compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling", version.ref = "composeFoundation" }
+compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview", version.ref = "composeFoundation" }
+compose-ui-ui = { module = "androidx.compose.ui:ui", version.ref = "composeFoundation" }
+compose-ui-uitextfonts = { module = "androidx.compose.ui:ui-text-google-fonts" }
+compose-ui-util = { module = "androidx.compose.ui:ui-util" }
+compose-ui-viewbinding = { module = "androidx.compose.ui:ui-viewbinding", version.ref = "composeFoundation" }
+compose-navigation = { module = "androidx.navigation:navigation-compose", version.ref = "composeNavigation" }
+compose-activity = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+compose-viewmodel = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "composeViewmodel" }
+
+sql-delight-adaper = {module = "app.cash.sqldelight:primitive-adapters", version.ref = "sqlDelightVersion"}
+sql-delight-runtime = {module = "app.cash.sqldelight:runtime", version.ref = "sqlDelightVersion"}
+sql-delight-coroutine = {module = "app.cash.sqldelight:coroutines-extensions", version.ref = "sqlDelightVersion"}
+
+sql-delight-android = {module = "app.cash.sqldelight:android-driver", version.ref = "sqlDelightVersion"}
+sql-delight-native = {module = "app.cash.sqldelight:native-driver", version.ref = "sqlDelightVersion"}
+
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
+
+
+[bundles]
+ktor-common = ["ktor-client-core", "ktor-client-logging", "ktor-serialization-kotlinx-json", "ktor-client-content-negotiation"]
+ktor-android = ["ktor-client-android", "ktor-client-okhttp"]
+ktor-ios = ["ktor-client-ios"]

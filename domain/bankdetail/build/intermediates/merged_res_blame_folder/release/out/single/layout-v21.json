@@ -1,0 +1,18 @@
+[
+    {
+        "merged": "com.jackson.shared.domain.bankdetail-merged_res-41:/layout-v21/notification_template_custom_big.xml",
+        "source": "com.jackson.shared.domain.bankdetail-core-1.11.0-beta02-34:/layout-v21/notification_template_custom_big.xml"
+    },
+    {
+        "merged": "com.jackson.shared.domain.bankdetail-merged_res-41:/layout-v21/notification_action_tombstone.xml",
+        "source": "com.jackson.shared.domain.bankdetail-core-1.11.0-beta02-34:/layout-v21/notification_action_tombstone.xml"
+    },
+    {
+        "merged": "com.jackson.shared.domain.bankdetail-merged_res-41:/layout-v21/notification_template_icon_group.xml",
+        "source": "com.jackson.shared.domain.bankdetail-core-1.11.0-beta02-34:/layout-v21/notification_template_icon_group.xml"
+    },
+    {
+        "merged": "com.jackson.shared.domain.bankdetail-merged_res-41:/layout-v21/notification_action.xml",
+        "source": "com.jackson.shared.domain.bankdetail-core-1.11.0-beta02-34:/layout-v21/notification_action.xml"
+    }
+]

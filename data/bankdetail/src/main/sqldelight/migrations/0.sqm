@@ -1,0 +1,52 @@
+import kotlin.Boolean;
+import kotlin.Int;
+import kotlin.Float;
+
+CREATE TABLE IF NOT EXISTS Banks (
+    id TEXT PRIMARY KEY,
+    bankName TEXT NOT NULL,
+    bankType TEXT,
+    bankCode TEXT NOT NULL,
+    priority INTEGER AS Int DEFAULT 0 NOT NULL,
+    minSavingsInterest REAL AS Float,
+    maxSavingsInterest REAL AS Float,
+    isEnabled  INTEGER AS Boolean DEFAULT 1 NOT NULL,
+    offset INTEGER DEFAULT 0 NOT NULL,
+    isSwiftCodeFetched INTEGER AS Boolean DEFAULT 0 NOT NULL,
+    isListFetched INTEGER AS Boolean DEFAULT 0 NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS BankDetail (
+    bankId TEXT NOT NULL,
+    bankName TEXT NOT NULL,
+    city TEXT NOT NULL,
+    state TEXT NOT NULL,
+    centre TEXT NOT NULL ,
+    swiftCode TEXT NOT NULL,
+    branch TEXT NOT NULL,
+    district TEXT NOT NULL,
+    contact TEXT NOT NULL,
+    address TEXT NOT NULL,
+    bankCode TEXT NOT NULL,
+    IFSCCode TEXT NOT NULL PRIMARY KEY,
+    ISO3166 TEXT NOT NULL,
+    MICR TEXT NOT NULL,
+     priority INTEGER AS Int DEFAULT 0 NOT NULL,
+    isSupportUPI  INTEGER AS Boolean DEFAULT 0 NOT NULL,
+    isSupportNEFT INTEGER AS Boolean DEFAULT 0 NOT NULL,
+    isSupportRTGS  INTEGER AS Boolean DEFAULT 0 NOT NULL,
+    isSupportIMPS  INTEGER AS Boolean DEFAULT 0 NOT NULL,
+     isEnabled  INTEGER AS Boolean DEFAULT 1 NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS BankSwift (
+ bankId TEXT NOT NULL,
+    bankName TEXT NOT NULL,
+    city TEXT NOT NULL,
+    country TEXT NOT NULL,
+    countryCode TEXT NOT NULL,
+     branch TEXT NOT NULL,
+      swiftCode TEXT NOT NULL PRIMARY KEY
+);
+
+

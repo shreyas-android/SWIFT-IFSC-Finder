@@ -1,0 +1,28 @@
+insertBankList:
+INSERT OR REPLACE INTO Banks (id, bankName, bankType, bankCode, priority, minSavingsInterest, maxSavingsInterest, isEnabled, offset, isSwiftCodeFetched)
+VALUES (?, ?, ?, ?, ?,?,?,?, ?, ?);
+
+getBankList:
+SELECT * FROM Banks ORDER BY priority;
+
+getBankListByOffset:
+SELECT * FROM Banks WHERE bankName LIKE '%' || :bankName || '%' ORDER BY priority LIMIT :limit OFFSET :offset;
+
+countBanks:
+SELECT count(*) FROM Banks WHERE isEnabled = 1;
+
+updateBankEnabled:
+UPDATE Banks SET isEnabled = ? WHERE id = ?;
+
+updateBankOffset:
+UPDATE Banks SET offset = ? WHERE id = ?;
+
+updateBankSwiftCodeFetched:
+UPDATE Banks SET isSwiftCodeFetched = ? WHERE id = ?;
+
+updateBankListFetched:
+UPDATE Banks SET isListFetched = ? WHERE id = ?;
+
+
+
+

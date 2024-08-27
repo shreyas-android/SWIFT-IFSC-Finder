@@ -1,0 +1,22 @@
+[
+    {
+        "merged": "com.jackson.shared.data.bankdetail-merged_res-39:/layout/ime_secondary_split_test_activity.xml",
+        "source": "com.jackson.shared.data.bankdetail-core-1.11.0-beta02-34:/layout/ime_secondary_split_test_activity.xml"
+    },
+    {
+        "merged": "com.jackson.shared.data.bankdetail-merged_res-39:/layout/notification_template_part_time.xml",
+        "source": "com.jackson.shared.data.bankdetail-core-1.11.0-beta02-34:/layout/notification_template_part_time.xml"
+    },
+    {
+        "merged": "com.jackson.shared.data.bankdetail-merged_res-39:/layout/custom_dialog.xml",
+        "source": "com.jackson.shared.data.bankdetail-core-1.11.0-beta02-34:/layout/custom_dialog.xml"
+    },
+    {
+        "merged": "com.jackson.shared.data.bankdetail-merged_res-39:/layout/ime_base_split_test_activity.xml",
+        "source": "com.jackson.shared.data.bankdetail-core-1.11.0-beta02-34:/layout/ime_base_split_test_activity.xml"
+    },
+    {
+        "merged": "com.jackson.shared.data.bankdetail-merged_res-39:/layout/notification_template_part_chronometer.xml",
+        "source": "com.jackson.shared.data.bankdetail-core-1.11.0-beta02-34:/layout/notification_template_part_chronometer.xml"
+    }
+]

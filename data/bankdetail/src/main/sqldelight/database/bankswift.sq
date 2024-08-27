@@ -1,0 +1,26 @@
+insertBankSwift:
+INSERT OR REPLACE INTO BankSwift (bankId, bankName, city, country, countryCode, branch, swiftCode)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+getBankSwiftByOffset:
+SELECT * FROM BankSwift LIMIT :limit OFFSET :offset;
+
+countBankSwift:
+SELECT count(*) FROM BankSwift;
+
+getSwiftCodeForBank:
+SELECT * FROM BankSwift WHERE bankName LIKE '%' || :bankName || '%' AND lower(city) LIKE '%' || :city || '%'
+AND lower(branch) LIKE '%' || :branch || '%' AND lower(country) LIKE '%' || :country || '%';
+
+
+
+getFilteredBankSwift:
+SELECT * FROM BankSwift WHERE bankName LIKE '%' || :bankName || '%' AND lower(city) LIKE '%' || :city || '%'
+AND lower(branch) LIKE '%' || :branch || '%' AND lower(country) LIKE '%' || :country || '%'  AND lower(swiftCode) LIKE '%' || :swiftcode || '%'  LIMIT :limit OFFSET :offset;
+
+
+countFilteredBankDetails:
+SELECT count(*) FROM BankSwift WHERE bankName LIKE '%' || :bankName || '%' AND lower(city) LIKE '%' || :city || '%'
+                                AND lower(branch) LIKE '%' || :branch || '%' AND lower(country) LIKE '%' || :country || '%'
+                                AND lower(swiftCode) LIKE '%' || :swiftcode || '%';
+
