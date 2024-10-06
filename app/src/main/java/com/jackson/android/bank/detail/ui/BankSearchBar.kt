@@ -86,6 +86,7 @@ import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.offset
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.androidai.framework.theme.sandroid.ui.SAndroidUITheme
 import kotlinx.coroutines.delay
 import kotlin.math.max
 import kotlin.math.min
@@ -220,7 +221,7 @@ fun SearchBarInputField(
         colors: TextFieldColors = SearchBarDefaults.inputFieldColors(),
         interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
 ) {
-    val accentColor = MaterialTheme.colorScheme.primary
+    val accentColor = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor
     val customTextSelectionColors = TextSelectionColors(
         handleColor = accentColor,
         backgroundColor = accentColor.copy(alpha = 0.4f))
@@ -237,7 +238,7 @@ fun SearchBarInputField(
             }), interactionSource = interactionSource,
             cursorBrush = SolidColor(accentColor),
             textStyle = TextStyle(fontSize = 16.sp,
-                color = MaterialTheme.colorScheme.onSurface),
+                color = SAndroidUITheme.colors.sAndroidUITextColors.searchBarTextColor),
             decorationBox = @Composable { innerTextField ->
                 TextFieldDefaults.DecorationBox(
                     value = query,
@@ -258,7 +259,7 @@ fun SearchBarInputField(
                         }
                     },
                     shape = SearchBarDefaults.inputFieldShape,
-                    colors = colors,
+                    colors = colors.copy(cursorColor = accentColor),
                     contentPadding = TextFieldDefaults.contentPaddingWithoutLabel(),
                     container = {},
                 )

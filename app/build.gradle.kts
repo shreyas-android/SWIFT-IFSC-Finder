@@ -15,6 +15,14 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val keystoreFile = project.rootProject.file("cred.properties")
+        val credProperties = org.jetbrains.kotlin.konan.properties.Properties()
+        credProperties.load(keystoreFile.inputStream())
+
+        buildConfigField(
+            "String", "SWIFT_API_KEY", credProperties.getProperty("SWIFT_API_KEY"))
+
     }
 
 
@@ -49,7 +57,9 @@ android {
     }
 
     buildFeatures{
+        buildConfig = true
         compose = true
+
     }
 
     composeOptions {
@@ -78,4 +88,6 @@ dependencies {
     implementation(libs.compose.viewmodel)
     implementation(libs.compose.material3)
     implementation(libs.compose.navigation)
+
+    implementation("com.github.shreyas-android:SKMPUIThemeLibrary:1.0.0")
 }

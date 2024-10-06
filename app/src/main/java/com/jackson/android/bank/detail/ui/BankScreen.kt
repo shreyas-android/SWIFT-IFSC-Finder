@@ -32,19 +32,20 @@ import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberDrawerState
@@ -73,11 +74,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.paging.compose.LazyPagingItems
+import com.androidai.framework.theme.sandroid.ui.SAndroidUITheme
 import com.jackson.android.bank.detail.R
 import com.jackson.android.bank.detail.data.enums.ScreenType
 import com.jackson.android.bank.detail.data.model.ItemBankData
@@ -181,8 +184,14 @@ fun BankScreen(
                     setEvent(BankUIEvent.OnGetSwiftCodeClicked(it))
                 })
         }, bottomBar = {
-            NavigationBar {
+            NavigationBar(containerColor = SAndroidUITheme.colors.sAndroidUIBackgroundColors.bottomNavigationBarColor) {
 
+                val colors = NavigationBarItemDefaults.colors(unselectedIconColor = SAndroidUITheme
+                    .colors.sAndroidUIIconColors.iconColor,
+                    indicatorColor = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor.copy(alpha = 0.1f),
+                    unselectedTextColor = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,
+                    selectedIconColor = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor,
+                    selectedTextColor = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor)
                 NavigationBarItem(
                     selected = bankUIState.selectedScreenType == ScreenType.IFSC, onClick = {
                         setEvent(BankUIEvent.OnScreenTypeChanged(ScreenType.IFSC))
@@ -190,11 +199,11 @@ fun BankScreen(
 
                               Icon(painter = painterResource(
                                   id = R.drawable.ic_ifsc_bank),
-                                  contentDescription = "")
+                                  contentDescription = "", )
                     }, label = {
                         Text(
                             text = "IFSC", fontSize = 14.sp)
-                    })
+                    }, colors = colors)
                 NavigationBarItem(
                     selected = bankUIState.selectedScreenType == ScreenType.SWIFT, onClick = {
                         setEvent(BankUIEvent.OnScreenTypeChanged(ScreenType.SWIFT))
@@ -205,9 +214,9 @@ fun BankScreen(
                     }, label = {
                         Text(
                             text = "SWIFT", fontSize = 14.sp)
-                    })
+                    }, colors = colors)
             }
-        }, containerColor = MaterialTheme.colorScheme.surface)
+        }, containerColor = SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor)
     }
 }
 
@@ -276,13 +285,15 @@ fun EmbeddedSearchBar(
                             imageVector = Icons.Rounded.ArrowBack,
                             contentDescription = stringResource(
                                 androidx.compose.ui.R.string.navigation_menu),
+                            tint = SAndroidUITheme.colors.sAndroidUIIconColors.iconColor
                         )
                     }
                 } else {
                     IconButton(onClick = {
                         onNavigationBarClicked()
                     }) {
-                        Icon(Icons.Default.Menu, contentDescription = "Menu")
+                        Icon(Icons.Default.Menu, contentDescription = "Menu",
+                            tint = SAndroidUITheme.colors.sAndroidUIIconColors.iconColor)
                     }
                 }
                 SearchFilterChips(Modifier, selectedTypeList = selectedTypeList,
@@ -305,7 +316,8 @@ fun EmbeddedSearchBar(
                             }, onSearch = onSearch, onActiveChange = activeChanged,
                             focusRequester = focusRequester, placeholder = {
                                 if(selectedTypeList.isEmpty()) {
-                                    Text("Search")
+                                    Text("Search",
+                                        color = SAndroidUITheme.colors.sAndroidUITextColors.searchBarHintColor)
                                 }
                             })
                     }) { type, query ->
@@ -316,9 +328,9 @@ fun EmbeddedSearchBar(
         }, active = isSearchActive, onActiveChange = activeChanged, modifier = searchModifier,
         colors = SearchBarDefaults.colors(
             containerColor = if(isSearchActive) {
-                MaterialTheme.colorScheme.surface
+                SAndroidUITheme.colors.sAndroidUIBackgroundColors.topAppBarColor
             } else {
-                MaterialTheme.colorScheme.surface
+                SAndroidUITheme.colors.sAndroidUIBackgroundColors.searchBarBackgroundColor
             },
         ), windowInsets = if(isSearchActive) {
             SearchBarDefaults.windowInsets
@@ -329,7 +341,7 @@ fun EmbeddedSearchBar(
         ConstraintLayout(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface)) {
+                .background(SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor)) {
             val (filterChipContainer, dataContainer, noResultContainer) = createRefs()
             FilterChips(Modifier.constrainAs(filterChipContainer) {
                 top.linkTo(parent.top)
@@ -352,7 +364,8 @@ fun EmbeddedSearchBar(
                         end.linkTo(parent.end)
                         width = Dimension.fillToConstraints
                     }, contentAlignment = Alignment.Center) {
-                        Text(text = stringResource(id = R.string.desc_no_results), fontSize = 16.sp)
+                        Text(text = stringResource(id = R.string.desc_no_results),
+                            fontSize = 16.sp, color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor)
                     }
                 } else {
                     PagingBankContainer(modifier = Modifier.constrainAs(dataContainer) {
@@ -381,16 +394,16 @@ fun SearchChipItem(
         modifier = Modifier
             .padding(horizontal = 4.dp, vertical = 12.dp)
             .border(
-                width = 1.dp, shape = CircleShape, color = MaterialTheme.colorScheme.primary)
+                width = 1.dp, shape = CircleShape, color = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor)
             .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically) {
 
         Text(
             text = BankProUtils.getNameByType(context = context, searchFilterType),
             fontSize = 16.sp, fontWeight = FontWeight.SemiBold,
-            color = MaterialTheme.colorScheme.primary)
+           color =  SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor)
 
-        val accentColor = MaterialTheme.colorScheme.primary
+        val accentColor = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor
 
         val customTextSelectionColors = TextSelectionColors(
             handleColor = accentColor, backgroundColor = accentColor.copy(alpha = 0.4f))
@@ -403,7 +416,7 @@ fun SearchChipItem(
                 .defaultMinSize(minWidth = 24.dp), value = value, onValueChange = {
                 onValueChanged(it)
             }, textStyle = TextStyle(
-                fontSize = 16.sp, color = MaterialTheme.colorScheme.onSurface), maxLines = 1,
+                fontSize = 16.sp, color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor), maxLines = 1,
                 keyboardActions = KeyboardActions(onSearch = {
                     onValueChanged(value)
                     focusManager.clearFocus()
@@ -416,7 +429,7 @@ fun SearchChipItem(
                 imageVector = Icons.Rounded.Close,
                 contentDescription = stringResource(
                     com.google.android.material.R.string.searchview_clear_text_content_description),
-                tint = MaterialTheme.colorScheme.primary,
+                tint = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor,
             )
         }
     }
@@ -434,15 +447,15 @@ fun FilterChips(
 
         filterList.forEach { type ->
             val containerColor = if(selectedFilterType.contains(type)) {
-                MaterialTheme.colorScheme.primary
+                SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor
             } else {
-                MaterialTheme.colorScheme.secondaryContainer
+                SAndroidUITheme.colors.sAndroidUIBackgroundColors.secondaryBackgroundColor
             }
 
             val textColor = if(selectedFilterType.contains(type)) {
-                colorResource(id = R.color.highlight_text_color)
+                SAndroidUITheme.colors.sAndroidUITextColors.highlightTextColor
             } else {
-                MaterialTheme.colorScheme.onSurface
+                SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor
             }
             Row(modifier = Modifier
                 .padding(horizontal = 4.dp, vertical = 6.dp)
@@ -500,12 +513,12 @@ fun PagingBankContainer(
                 is ItemBankData.Header -> stickyHeader {
                     Box(
                         modifier = Modifier
-                            .background(MaterialTheme.colorScheme.surface)
+                            .background(SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor)
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp)) {
                         Text(
                             text = itemBankData.bankName, fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,
                             modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Medium)
                     }
                 }
@@ -520,29 +533,7 @@ fun PagingBankContainer(
 
                 }
             }
-        }/* items(bankDetailItems) { itemBankData ->
-
-            if(itemBankData != null) {
-                when(itemBankData) {
-                    is ItemBankData.Detail -> {
-                        BankDetailInfoCard(
-                            bankDetailInfo = itemBankData.bankDetailInfo, onItemClick,
-                            onGetSwiftCodeClick)
-                    }
-
-                    is ItemBankData.Header -> {
-                        Box(modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)) {
-                            Text(
-                                text = itemBankData.bankName, fontSize = 16.sp,
-                                modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Medium)
-                        }
-                    }
-                }
-
-            }
-        }*/
+        }
     }
 }
 
@@ -552,7 +543,7 @@ fun BankDetailInfoCard(
         onGetSwiftCodeClick : (BankDetailInfo) -> Unit) {
     val context = LocalContext.current
     val colors = CardDefaults.cardColors(
-        containerColor = MaterialTheme.colorScheme.surface)
+        containerColor = SAndroidUITheme.colors.sAndroidUIBackgroundColors.cardBackgroundColor)
 
 
 
@@ -567,24 +558,30 @@ fun BankDetailInfoCard(
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = "Bank name : ${bankDetailInfo.bankName}", fontSize = 16.sp,
+                color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,
                 modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Normal)
             Text(
                 text = "City : ${bankDetailInfo.city}", fontSize = 16.sp,
-                modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Normal)
+                color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,
+                modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Normal, maxLines = 1,
+                overflow = TextOverflow.Ellipsis)
 
             if(bankDetailInfo.branch.isNotEmpty()) {
                 Text(
                     text = "Branch : ${bankDetailInfo.branch}", fontSize = 16.sp,
-                    modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Normal)
+                    color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,
+                    modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Normal, maxLines = 1,
+                    overflow = TextOverflow.Ellipsis)
             }
 
             if(bankDetailInfo.swiftCode.isNotEmpty()) {
                 Row(modifier = Modifier.padding(6.dp)) {
-                    Text(text = "Swift Code : ", fontSize = 16.sp)
+                    Text(text = "Swift Code : ", fontSize = 16.sp, color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,)
 
-                    Text(text = bankDetailInfo.swiftCode, fontSize = 16.sp)
+                    Text(text = bankDetailInfo.swiftCode, fontSize = 16.sp, color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,)
                     Icon(painter = painterResource(id = R.drawable.ic_copy),
                         contentDescription = "Copy",
+                        tint = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor,
                         modifier = Modifier
                             .padding(start = 8.dp)
                             .clickable {
@@ -596,10 +593,11 @@ fun BankDetailInfoCard(
             } //}
             if(bankDetailInfo.ifscCode.isNotEmpty()) {
                 Row(modifier = Modifier.padding(6.dp)) {
-                    Text(text = "IFSC Code : ", fontSize = 16.sp)
-                    Text(text = bankDetailInfo.ifscCode, fontSize = 16.sp)
+                    Text(text = "IFSC Code : ", fontSize = 16.sp, color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,)
+                    Text(text = bankDetailInfo.ifscCode, fontSize = 16.sp, color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,)
                     Icon(painter = painterResource(id = R.drawable.ic_copy),
                         contentDescription = "Copy",
+                        tint = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor,
                         modifier = Modifier
                             .padding(start = 8.dp)
                             .clickable {
@@ -616,8 +614,8 @@ fun BankDetailInfoCard(
 fun BankListDrawer(
         searchQuery : String, banks : LazyPagingItems<BankInfo>,
         onCheckChanged : (BankInfo, Boolean) -> Unit, onQueryChange : (String) -> Unit) {
-    ModalDrawerSheet {
-        Surface(color = MaterialTheme.colorScheme.background) {
+    ModalDrawerSheet(drawerContainerColor = SAndroidUITheme.colors.sAndroidUIBackgroundColors.sideSheetBackgroundColor) {
+        Surface(color = SAndroidUITheme.colors.sAndroidUIBackgroundColors.sideSheetBackgroundColor) {
             val focusRequester = remember {
                 FocusRequester()
             }
@@ -626,7 +624,7 @@ fun BankListDrawer(
                 SearchBarInputField(modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceContainer, shape = CircleShape)
+                    .background(SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor, shape = CircleShape)
                     .padding(start = 16.dp), query = searchQuery, isActive = false,
                     onQueryChange = {
                         onQueryChange(it)
@@ -635,7 +633,8 @@ fun BankListDrawer(
                     }, onActiveChange = {
 
                     }, focusRequester = focusRequester, placeholder = {
-                        Text("Search banks", modifier = Modifier)
+                        Text("Search banks", modifier = Modifier,  color =
+                        SAndroidUITheme.colors.sAndroidUITextColors.searchBarHintColor)
                     })
 
                 if(searchQuery.isNotEmpty() && banks.itemSnapshotList.isEmpty()) {
@@ -644,7 +643,7 @@ fun BankListDrawer(
                             .fillMaxWidth()
                             .fillMaxHeight(),
                         contentAlignment = Alignment.Center) {
-                        Text(text = stringResource(id = R.string.desc_no_results), fontSize = 16.sp)
+                        Text(text = stringResource(id = R.string.desc_no_results), fontSize = 16.sp, color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor)
                     }
                 } else {
                     LazyColumn(modifier = Modifier.padding(start = 16.dp)) {
@@ -665,7 +664,8 @@ fun BankListDrawer(
                                             top.linkTo(parent.top)
                                             start.linkTo(parent.start)
                                             bottom.linkTo(parent.bottom)
-                                        })
+                                        }, colors = CheckboxDefaults.colors(checkedColor = SAndroidUITheme.colors.sAndroidUIOtherColors.checkBoxSelectedColor,
+                                            uncheckedColor = SAndroidUITheme.colors.sAndroidUIOtherColors.checkBoxUnSelectedColor))
 
                                     Text(item.bankName, fontSize = 16.sp,
                                         modifier = Modifier
@@ -676,7 +676,8 @@ fun BankListDrawer(
                                                 end.linkTo(count.start)
                                                 bottom.linkTo(parent.bottom)
                                                 width = Dimension.fillToConstraints
-                                            }, textAlign = TextAlign.Start)
+                                            }, textAlign = TextAlign.Start,
+                                        color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor)
 
                                     Text(item.count.toString(), fontSize = 16.sp,
                                         modifier = Modifier
@@ -685,7 +686,8 @@ fun BankListDrawer(
                                                 top.linkTo(parent.top)
                                                 end.linkTo(parent.end)
                                                 bottom.linkTo(parent.bottom)
-                                            }, textAlign = TextAlign.Start)
+                                            }, textAlign = TextAlign.Start,
+                                        color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor)
 
                                     val interest =
                                         if(item.minInterest != null && item.maxInterest != null) {
@@ -705,7 +707,8 @@ fun BankListDrawer(
                                                 .constrainAs(interestText) {
                                                     top.linkTo(bankName.bottom)
                                                     start.linkTo(bankName.start)
-                                                }, textAlign = TextAlign.Start)
+                                                }, textAlign = TextAlign.Start,
+                                            color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor)
                                     }
                                 }
 

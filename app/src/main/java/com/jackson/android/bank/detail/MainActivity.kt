@@ -10,8 +10,11 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.androidai.framework.theme.sandroid.ui.SAndroidThemeCore
+import com.androidai.framework.theme.sandroid.ui.SAndroidUITheme
 import com.jackson.android.bank.detail.ui.BankNavigation
 import com.jackson.android.bank.detail.ui.BankScreen
 import com.jackson.android.bank.detail.viewmodel.BankDetailViewModel
@@ -34,7 +37,7 @@ class MainActivity:AppCompatActivity() {
         BankDetailManager.getInstance()
     }
     private val bankDetailViewModelFactory by lazy {
-        BankDetailViewModelFactory(SWIFT_API_KEY,bankDetailManager, sharedPref)
+        BankDetailViewModelFactory(BuildConfig.SWIFT_API_KEY,bankDetailManager, sharedPref)
     }
 
     private val bankDetailViewModel by lazy {
@@ -42,14 +45,18 @@ class MainActivity:AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState : Bundle?) {
-        super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        super.onCreate(savedInstanceState)
+
         sharedPref = this.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
         sharedPreferenceEditor = sharedPref.edit()
 
         setContent {
 
-            androidx.compose.material3.MaterialTheme(colorScheme = if(isSystemInDarkTheme()) darkColorScheme() else lightColorScheme()){
+            val themeManager = remember {
+                SAndroidThemeCore.getThemeManager()
+            }
+            SAndroidUITheme(themeManager) {
                 BankNavigation(bankDetailViewModel)
             }
 
