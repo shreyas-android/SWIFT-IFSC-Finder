@@ -1,5 +1,6 @@
 package com.jackson.android.bank.detail.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -39,20 +40,21 @@ import migrations.BankDetail
 import migrations.BankSwift
 import migrations.Banks
 
-class BankDetailViewModel(private val apiKey:String, private val bankDetailManager : BankDetailManager):ViewModel() {
+class BankDetailViewModel(
+        private val apiKey : String,
+        private val bankDetailManager : BankDetailManager) : ViewModel() {
 
-    private var shouldRefreshBank: (() -> Unit)? = null
+    private var shouldRefreshBank : (() -> Unit)? = null
 
-    private var shouldRefreshBankDetail: (() -> Unit)? = null
+    private var shouldRefreshBankDetail : (() -> Unit)? = null
 
-    private var shouldRefreshFilterBankDetail: (() -> Unit)? = null
+    private var shouldRefreshFilterBankDetail : (() -> Unit)? = null
 
-    private var shouldRefreshFilterBankSwift: (() -> Unit)? = null
+    private var shouldRefreshFilterBankSwift : (() -> Unit)? = null
 
+    private var bankSwiftRemoteJob : Job? = null
 
-    private var bankSwiftRemoteJob:Job? = null
-
-    private var bankDetailRemoteJob:Job? = null
+    private var bankDetailRemoteJob : Job? = null
 
     private val screenTypeFlow = MutableStateFlow(ScreenType.IFSC)
 
@@ -74,8 +76,8 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
     private val bankDetailPager by lazy {
         Pager(config = PagingConfig(100, prefetchDistance = 20, enablePlaceholders = true),
             pagingSourceFactory = {
-            getBankDetailsPagingSource()
-        })
+                getBankDetailsPagingSource()
+            })
     }
 
     private val filterBankDetailPager by lazy {
@@ -97,26 +99,26 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
     }
 
     val bankDetailsPagingFlow = bankDetailPager.flow.map {
-        getItemData(it){detail->
+        getItemData(it) { detail ->
             detail.toBankDetailInfo()
         }
     }
 
     val bankSwiftCodePagingFloe = bankSwiftCodePager.flow.map {
-        getItemData(it){detail->
+        getItemData(it) { detail ->
             detail.toBankDetailInfo()
         }
     }
 
+    val filterBankDetailsPagingFlow : Flow<PagingData<ItemBankData>> =
+        filterBankDetailPager.flow.map {
+            getItemData(it) { detail ->
+                detail.toBankDetailInfo()
+            }
+        }.cachedIn(viewModelScope)
 
-    val filterBankDetailsPagingFlow: Flow<PagingData<ItemBankData>> = filterBankDetailPager.flow.map {
-        getItemData(it){detail->
-            detail.toBankDetailInfo()
-        }
-    }.cachedIn(viewModelScope)
-
-    val filterBankSwiftPagingFlow: Flow<PagingData<ItemBankData>> = filterBankSwiftPager.flow.map {
-        getItemData(it){detail->
+    val filterBankSwiftPagingFlow : Flow<PagingData<ItemBankData>> = filterBankSwiftPager.flow.map {
+        getItemData(it) { detail ->
             detail.toBankDetailInfo()
         }
     }.cachedIn(viewModelScope)
@@ -133,19 +135,23 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
 
     private val backgroundScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
-    private fun <T : Any> getItemData(pagingData:PagingData<T>, transform : (T) -> BankDetailInfo):PagingData<ItemBankData>{
-      return  pagingData.map {
+    private fun <T : Any> getItemData(
+            pagingData : PagingData<T>,
+            transform : (T) -> BankDetailInfo) : PagingData<ItemBankData> {
+        return pagingData.map {
             ItemBankData.Detail(transform(it))
-        }.insertSeparators { detail: ItemBankData.Detail?, detail2: ItemBankData.Detail? ->
-            if(detail?.bankDetailInfo?.bankId != detail2?.bankDetailInfo?.bankId){
-                ItemBankData.Header(detail2?.bankDetailInfo?.bankName ?: "")
-            }else{
+        }.insertSeparators { detail : ItemBankData.Detail?, detail2 : ItemBankData.Detail? ->
+            if(detail?.bankDetailInfo?.bankId != detail2?.bankDetailInfo?.bankId) {
+                ItemBankData.Header(
+                    detail2?.bankDetailInfo?.bankName
+                        ?: "")
+            } else {
                 detail
             }
         }
     }
 
-    fun updateBankFromRemote(onSuccess:()->Unit){
+    fun updateBankFromRemote(onSuccess : () -> Unit) {
         backgroundScope.launch {
             bankDetailManager.updateBankListFromRemote {
                 onBankDataLoaded(false)
@@ -154,26 +160,37 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
         }
     }
 
-    fun onBankDataLoaded(isRefresh : Boolean){
+    fun onBankDataLoaded(isRefresh : Boolean) {
+        _bankUIState.update {
+            it.copy(isSyncing = true)
+        }
         backgroundScope.launch {
             updateBankSwiftCodeRemote(isRefresh)
             updateBankPagingFromRemote(isRefresh)
         }
     }
 
-    private fun updateBankSwiftCodeRemote(isRefresh:Boolean){
+    private fun updateBankSwiftCodeRemote(isRefresh : Boolean) {
         if(bankSwiftRemoteJob == null) {
             bankSwiftRemoteJob = backgroundScope.launch {
-                bankDetailManager.updateBankSwiftFromRemote(apiKey, isRefresh)
+                bankDetailManager.updateBankSwiftFromRemote(apiKey, isRefresh) {
+
+                }
                 bankSwiftRemoteJob = null
             }
         }
     }
 
-    private fun updateBankPagingFromRemote(isRefresh:Boolean){
+    private fun updateBankPagingFromRemote(isRefresh : Boolean) {
         if(bankDetailRemoteJob == null) {
             bankDetailRemoteJob = backgroundScope.launch {
-                bankDetailManager.updateBankPagingFromRemote(isRefresh)
+                bankDetailManager.updateBankPagingFromRemote(isRefresh) {
+                    Log.d("CHECKBANKLOADED", "CHEKCIG THE BANK LOADED = $")
+                    _bankUIState.update {
+                        it.copy(isSyncing = false)
+                    }
+                }
+
                 bankDetailRemoteJob = null
             }
         }
@@ -194,7 +211,8 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
     }
 
     private fun getBankInfoPagingSource() : PagingSource<Int, Banks> {
-        val pagingSource = bankDetailManager.getBankInfoPagingSource(_bankUIState.value.bankSearchQuery)
+        val pagingSource =
+            bankDetailManager.getBankInfoPagingSource(_bankUIState.value.bankSearchQuery)
         shouldRefreshBank = {
             pagingSource.invalidate()
         }
@@ -202,8 +220,8 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
     }
 
     private fun getFilteredBankDetailsPagingSource() : PagingSource<Int, BankDetail> {
-      val filterPagingSource =   bankDetailManager
-          .getFilteredBankDetailsPagingSource(bankFilterInfoFlow.value )
+        val filterPagingSource =
+            bankDetailManager.getFilteredBankDetailsPagingSource(bankFilterInfoFlow.value)
 
         shouldRefreshFilterBankDetail = {
             filterPagingSource.invalidate()
@@ -213,8 +231,8 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
     }
 
     private fun getFilteredBankSwiftPagingSource() : PagingSource<Int, BankSwift> {
-        val filterPagingSource =   bankDetailManager
-            .getFilteredBankSwiftPagingSource(swiftCodeFilterInfoFlow.value)
+        val filterPagingSource =
+            bankDetailManager.getFilteredBankSwiftPagingSource(swiftCodeFilterInfoFlow.value)
 
         shouldRefreshFilterBankSwift = {
             filterPagingSource.invalidate()
@@ -223,13 +241,12 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
         return filterPagingSource
     }
 
-
-    fun setEvent(bankUIEvent : BankUIEvent){
-        when(bankUIEvent){
+    fun setEvent(bankUIEvent : BankUIEvent) {
+        when(bankUIEvent) {
             is BankUIEvent.OnBankInfoEnableChanged -> {
                 viewModelScope.launch {
-                    bankDetailManager.updateBankEnabled(bankUIEvent.isEnabled,
-                        bankUIEvent.bankInfo.id)
+                    bankDetailManager.updateBankEnabled(
+                        bankUIEvent.isEnabled, bankUIEvent.bankInfo.id)
                     refreshBankDetail()
                 }
             }
@@ -241,11 +258,13 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
 
                 clearAllFilter()
             }
+
             is BankUIEvent.OnSearchQueryChanged -> {
                 var bankFilterInfo = _bankUIState.value.bankFilterInfo
                 bankFilterInfo = bankFilterInfo.copy(bankName = bankUIEvent.query)
                 _bankUIState.update {
-                    it.copy(bankDetailSearchQuery = bankUIEvent.query, bankFilterInfo = bankFilterInfo)
+                    it.copy(
+                        bankDetailSearchQuery = bankUIEvent.query, bankFilterInfo = bankFilterInfo)
                 }
 
                 updateFilterBank(bankFilterInfo, screenTypeFlow.value)
@@ -269,7 +288,7 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
                     _bankUIState.update {
                         it.copy(selectedFilterTypeSet = set)
                     }
-                }else{
+                } else {
                     set.remove(bankUIEvent.filterType)
                     bankFilterInfo = checkAndUpdateValue(bankUIEvent.filterType, bankFilterInfo, "")
                     _bankUIState.update {
@@ -283,8 +302,8 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
 
             is BankUIEvent.OnFilterValueChanged -> {
                 var bankFilterInfo = _bankUIState.value.bankFilterInfo
-                bankFilterInfo = checkAndUpdateValue(bankUIEvent.filterType, bankFilterInfo,
-                    bankUIEvent.value)
+                bankFilterInfo =
+                    checkAndUpdateValue(bankUIEvent.filterType, bankFilterInfo, bankUIEvent.value)
 
                 _bankUIState.update {
                     it.copy(bankFilterInfo = bankFilterInfo)
@@ -312,7 +331,6 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
                     it.copy(openDrawer = bankUIEvent.shouldOpen)
                 }
             }
-
 
             is BankUIEvent.OnClearAllFilter -> {
                 clearAllFilter()
@@ -342,11 +360,11 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
 
             is BankUIEvent.OnGetSwiftCodeClicked -> {
                 val banDetailInfo = bankUIEvent.bankDetailInfo
-                val swiftCodeFilterInfo = SwiftCodeFilterInfo(banDetailInfo.bankName,
-                    banDetailInfo.city)
+                val swiftCodeFilterInfo =
+                    SwiftCodeFilterInfo(banDetailInfo.bankName, banDetailInfo.city)
                 swiftCodeFilterInfoFlow.value = swiftCodeFilterInfo
-                swiftSelectedTypeSetFlow.value = setOf(BankProUtils.TYPE_FILTER_SEARCH_CITY,
-                    BankProUtils.TYPE_FILTER_BANK_NAME)
+                swiftSelectedTypeSetFlow.value =
+                    setOf(BankProUtils.TYPE_FILTER_SEARCH_CITY, BankProUtils.TYPE_FILTER_BANK_NAME)
                 viewModelScope.launch {
                     _bankUISideEffectChannel.send(BankUISideEffect.NavigateSwiftCode)
                 }
@@ -359,6 +377,7 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
                 updateFilteredBankSwift(SwiftCodeFilterInfo())
 
             }
+
             is BankUIEvent.OnSwiftFilterSelected -> {
                 val set = swiftSelectedTypeSetFlow.value.toHashSet()
                 var swiftCodeFilterInfo = swiftCodeFilterInfoFlow.value
@@ -366,9 +385,10 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
 
                 if(bankUIEvent.enabled) {
                     set.add(bankUIEvent.filterType)
-                }else{
+                } else {
                     set.remove(bankUIEvent.filterType)
-                    swiftCodeFilterInfo = checkAndUpdateValue(bankUIEvent.filterType, swiftCodeFilterInfo, "")
+                    swiftCodeFilterInfo =
+                        checkAndUpdateValue(bankUIEvent.filterType, swiftCodeFilterInfo, "")
                 }
                 swiftCodeFilterInfoFlow.value = swiftCodeFilterInfo
                 swiftSelectedTypeSetFlow.value = set
@@ -376,29 +396,33 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
                 updateFilteredBankSwift(swiftCodeFilterInfo)
 
             }
-            is BankUIEvent.OnSwiftFilterValueChanged ->{
+
+            is BankUIEvent.OnSwiftFilterValueChanged -> {
                 var swiftCodeFilterInfo = swiftCodeFilterInfoFlow.value
-                swiftCodeFilterInfo = checkAndUpdateValue(bankUIEvent.filterType, swiftCodeFilterInfo, bankUIEvent.value)
+                swiftCodeFilterInfo = checkAndUpdateValue(
+                    bankUIEvent.filterType, swiftCodeFilterInfo, bankUIEvent.value)
 
                 swiftCodeFilterInfoFlow.value = swiftCodeFilterInfo
                 updateFilteredBankSwift(swiftCodeFilterInfo)
 
             }
+
             BankUIEvent.OnSwiftKeyBackPress -> {
 
             }
+
             is BankUIEvent.OnSwiftRemoveFilter -> {
                 val set = swiftSelectedTypeSetFlow.value.toHashSet()
                 set.remove(bankUIEvent.filterType)
 
                 var swiftCodeFilterInfo = swiftCodeFilterInfoFlow.value
-                swiftCodeFilterInfo = checkAndUpdateValue(bankUIEvent.filterType, swiftCodeFilterInfo, "")
+                swiftCodeFilterInfo =
+                    checkAndUpdateValue(bankUIEvent.filterType, swiftCodeFilterInfo, "")
 
                 swiftCodeFilterInfoFlow.value = swiftCodeFilterInfo
                 swiftSelectedTypeSetFlow.value = set
 
                 updateFilteredBankSwift(swiftCodeFilterInfo)
-
 
             }
 
@@ -412,7 +436,7 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
         }
     }
 
-    fun clearAllFilter(){
+    fun clearAllFilter() {
         val bankFilterInfo = BankFilterInfo()
         _bankUIState.update {
             it.copy(selectedFilterTypeSet = setOf(), bankFilterInfo = bankFilterInfo)
@@ -421,41 +445,41 @@ class BankDetailViewModel(private val apiKey:String, private val bankDetailManag
         updateFilterBank(bankFilterInfo, screenTypeFlow.value)
     }
 
-
-    private fun updateFilterBank(bankFilterInfo : BankFilterInfo, screenType : ScreenType){
-        if(screenType == ScreenType.IFSC){
+    private fun updateFilterBank(bankFilterInfo : BankFilterInfo, screenType : ScreenType) {
+        if(screenType == ScreenType.IFSC) {
             bankFilterInfoFlow.value = bankFilterInfo
             updateFilteredBankDetails(bankFilterInfo)
-        }else{
-            val swiftCodeFilterInfo = SwiftCodeFilterInfo(bankFilterInfo.bankName,
-                bankFilterInfo.city, bankFilterInfo.branch, bankFilterInfo.country, swiftCode =  bankFilterInfo.swiftCode)
+        } else {
+            val swiftCodeFilterInfo = SwiftCodeFilterInfo(
+                bankFilterInfo.bankName, bankFilterInfo.city, bankFilterInfo.branch,
+                bankFilterInfo.country, swiftCode = bankFilterInfo.swiftCode)
 
             swiftCodeFilterInfoFlow.value = swiftCodeFilterInfo
             updateFilteredBankSwift(swiftCodeFilterInfo)
         }
     }
 
-    private fun updateFilteredBankDetails(bankFilterInfo : BankFilterInfo){
+    private fun updateFilteredBankDetails(bankFilterInfo : BankFilterInfo) {
         refreshFilteredBankDetail()
     }
-    private fun updateFilteredBankSwift(swiftCodeFilterInfo : SwiftCodeFilterInfo){
+
+    private fun updateFilteredBankSwift(swiftCodeFilterInfo : SwiftCodeFilterInfo) {
         refreshFilteredBankSwift()
     }
 
-    private fun refreshBankDetail(){
+    private fun refreshBankDetail() {
         shouldRefreshBankDetail?.invoke()
     }
 
-    private fun refreshFilteredBankDetail(){
+    private fun refreshFilteredBankDetail() {
         shouldRefreshFilterBankDetail?.invoke()
     }
 
-    private fun refreshFilteredBankSwift(){
+    private fun refreshFilteredBankSwift() {
         shouldRefreshFilterBankSwift?.invoke()
     }
 
-
-    private fun refreshBanks(){
+    private fun refreshBanks() {
         shouldRefreshBank?.invoke()
     }
 

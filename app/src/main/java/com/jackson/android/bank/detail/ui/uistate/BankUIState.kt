@@ -5,6 +5,7 @@ import com.jackson.shared.data.bankdetail.data.model.BankFilterInfo
 import com.jackson.shared.domain.bankdetail.data.model.BankInfo
 
 data class BankUIState(
+        val isSyncing:Boolean,
         val bankSearchQuery:String,
         val bankList:List<BankInfo>,
         val openDrawer:Boolean,
@@ -14,7 +15,7 @@ data class BankUIState(
         val selectedScreenType: ScreenType,
         val bankFilterInfo : BankFilterInfo){
     companion object{
-        fun getDefault() = BankUIState("",listOf(),  false, "", false, setOf(),
+        fun getDefault() = BankUIState(false, "",listOf(),  false, "", false, setOf(),
             ScreenType.IFSC,
             BankFilterInfo(),)
     }

@@ -1,6 +1,5 @@
 package com.jackson.android.bank.detail.ui
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -41,6 +40,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationBar
@@ -52,6 +52,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -60,14 +61,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -174,15 +173,19 @@ fun BankScreen(
             } else {
                 bankSwiftCodePagingItems
             }
-            PagingBankContainer(
-                Modifier
-                    .fillMaxSize()
-                    .padding(it), false, pagingItems,
-                onItemClick = { bankDetailInfo ->
-                    setEvent(BankUIEvent.OnBankDetailClicked(bankDetailInfo))
-                }, onGetSwiftCodeClick = {
-                    setEvent(BankUIEvent.OnGetSwiftCodeClicked(it))
-                })
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(it)) {
+                RefreshIndicator(bankUIState.isSyncing)
+                PagingBankContainer(
+                    Modifier,
+                    false, pagingItems,
+                    onItemClick = { bankDetailInfo ->
+                        setEvent(BankUIEvent.OnBankDetailClicked(bankDetailInfo))
+                    }, onGetSwiftCodeClick = {
+                        setEvent(BankUIEvent.OnGetSwiftCodeClicked(it))
+                    })
+            }
         }, bottomBar = {
             NavigationBar(containerColor = SAndroidUITheme.colors.sAndroidUIBackgroundColors.bottomNavigationBarColor) {
 
@@ -217,6 +220,13 @@ fun BankScreen(
                     }, colors = colors)
             }
         }, containerColor = SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor)
+    }
+}
+
+@Composable
+fun RefreshIndicator(isSyncing : Boolean){
+    if(isSyncing){
+        LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor, trackColor = SAndroidUITheme.colors.sAndroidUIOtherColors.rippleColor)
     }
 }
 
@@ -394,7 +404,8 @@ fun SearchChipItem(
         modifier = Modifier
             .padding(horizontal = 4.dp, vertical = 12.dp)
             .border(
-                width = 1.dp, shape = CircleShape, color = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor)
+                width = 1.dp, shape = CircleShape,
+                color = SAndroidUITheme.colors.sAndroidUIOtherColors.accentColor)
             .padding(horizontal = 16.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically) {
 
@@ -513,7 +524,8 @@ fun PagingBankContainer(
                 is ItemBankData.Header -> stickyHeader {
                     Box(
                         modifier = Modifier
-                            .background(SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor)
+                            .background(
+                                SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor)
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp)) {
                         Text(
@@ -624,7 +636,9 @@ fun BankListDrawer(
                 SearchBarInputField(modifier = Modifier
                     .padding(16.dp)
                     .fillMaxWidth()
-                    .background(SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor, shape = CircleShape)
+                    .background(
+                        SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor,
+                        shape = CircleShape)
                     .padding(start = 16.dp), query = searchQuery, isActive = false,
                     onQueryChange = {
                         onQueryChange(it)

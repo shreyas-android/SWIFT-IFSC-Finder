@@ -22,6 +22,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
@@ -47,13 +48,15 @@ internal class BankDetailManagerImpl(private val bankRemoteRepository: BankRemot
         }
     }
 
-    override suspend fun updateBankSwiftFromRemote(apiKey:String, isRefresh:Boolean) {
+    override suspend fun updateBankSwiftFromRemote(apiKey:String, isRefresh:Boolean, onDataUpdated:()->Unit) {
         val bankList = bankDataRepository.getBankList()
-        bankList.forEach { banks ->
+        val results =  bankList.map {banks ->
+            managerBackgroundScope.async {
             if(isRefresh || !banks.isSwiftCodeFetched) {
-                managerBackgroundScope.async {
+
                     val bankResponse = bankRemoteRepository.getBankSwiftList(
                         apiKey, banks.bankName.removeSuffix("Ltd."))
+
                     when(bankResponse) {
                         is RemoteResponse.Error -> {
                         }
@@ -63,16 +66,20 @@ internal class BankDetailManagerImpl(private val bankRemoteRepository: BankRemot
                             updateBankSwiftFetched(true, banks.id)
                         }
                     }
-                }.await()
+                }
             }
         }
+
+        results.awaitAll()
+        onDataUpdated()
     }
 
-    override suspend fun updateBankPagingFromRemote(isRefresh:Boolean) {
+    override suspend fun updateBankPagingFromRemote(isRefresh:Boolean, onDataUpdated:()->Unit) {
          val bankList = bankDataRepository.getBankList()
-        bankList.forEach {banks ->
+       val results =  bankList.map {banks ->
+            managerBackgroundScope.async {
             if(isRefresh || !banks.isListFetched) {
-                managerBackgroundScope.launch {
+
                     var hasNext = false
                     var count = banks.offset
                     do {
@@ -102,6 +109,9 @@ internal class BankDetailManagerImpl(private val bankRemoteRepository: BankRemot
                 }
             }
         }
+
+        results.awaitAll()
+        onDataUpdated()
     }
 
     private suspend fun insertBankDetailResponse(banks : Banks, bankDetailResponseItems : List<BankDetailResponse>){

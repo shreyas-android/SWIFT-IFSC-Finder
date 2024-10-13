@@ -19,9 +19,9 @@ interface BankDetailManager {
 
     suspend fun updateBankListFromRemote(onSuccess:()->Unit)
 
-    suspend fun updateBankPagingFromRemote(isRefresh:Boolean)
+    suspend fun updateBankPagingFromRemote(isRefresh:Boolean, onDataUpdated:()->Unit)
 
-    suspend fun updateBankSwiftFromRemote(apiKey:String, isRefresh:Boolean)
+    suspend fun updateBankSwiftFromRemote(apiKey:String, isRefresh:Boolean, onDataUpdated:()->Unit)
 
     suspend fun getBankInfoItems(): CommonFlow<List<BankInfo>>
 
