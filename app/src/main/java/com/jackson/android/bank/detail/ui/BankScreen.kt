@@ -1,5 +1,6 @@
 package com.jackson.android.bank.detail.ui
 
+import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
@@ -143,9 +144,9 @@ fun BankScreen(
             EmbeddedSearchBar(bankUIState.bankDetailSearchQuery, bankUIState.selectedFilterTypeSet,
                 bankUIState.selectedScreenType,
                 filterPagingItems,
-                bankUIState.bankFilterInfo, {
+                bankUIState.bankFilterInfo, onQueryChange = {
                     setEvent(BankUIEvent.OnSearchQueryChanged(it))
-                }, bankUIState.isSearchActive, {
+                }, bankUIState.isSearchActive, onActiveChanged = {
                     setEvent(BankUIEvent.OnSearchActiveChanged(it))
                 }, Modifier, {
                     setEvent(BankUIEvent.OnSearchQueryChanged(it))
@@ -277,6 +278,7 @@ fun EmbeddedSearchBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
+                        Log.d("CHECKSEARCHBAR","CHEKCIG THE SEARCH BAR = $isSearchActive and $selectedTypeList")
                         if(isSearchActive) {
                             focusRequester.requestFocus()
                         } else {
@@ -452,6 +454,7 @@ fun FilterChips(
         modifier : Modifier, screenType : ScreenType, filterList : List<Int> = BankProUtils.getAllFilterList(screenType),
         selectedFilterType : Set<Int>, onFilterSelected : (Int, Boolean) -> Unit) {
 
+    Log.d("CHECKFILTERTYPE","CHEKCITTNTHE FILTER TYPE = $selectedFilterType")
     val context = LocalContext.current
 
     FlowRow(modifier = modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {

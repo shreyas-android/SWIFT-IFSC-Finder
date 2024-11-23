@@ -6,7 +6,7 @@ getBankList:
 SELECT * FROM Banks ORDER BY priority;
 
 getBankListByOffset:
-SELECT * FROM Banks WHERE bankName LIKE '%' || :bankName || '%' ORDER BY priority LIMIT :limit OFFSET :offset;
+SELECT * FROM Banks WHERE bankName LIKE '%' || :query || '%' OR bankCode LIKE '%' || :query || '%' ORDER BY priority LIMIT :limit OFFSET :offset;
 
 countBanks:
 SELECT count(*) FROM Banks WHERE isEnabled = 1;

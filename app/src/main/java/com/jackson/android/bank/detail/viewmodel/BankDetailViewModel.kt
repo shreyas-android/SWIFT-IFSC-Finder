@@ -256,12 +256,15 @@ class BankDetailViewModel(
                     it.copy(isSearchActive = bankUIEvent.isActive)
                 }
 
-                clearAllFilter()
+                if(!bankUIEvent.isActive) {
+                    clearAllFilter()
+                }
             }
 
             is BankUIEvent.OnSearchQueryChanged -> {
                 var bankFilterInfo = _bankUIState.value.bankFilterInfo
                 bankFilterInfo = bankFilterInfo.copy(bankName = bankUIEvent.query)
+                Log.d("CHECKBANKFILTERINFO", "CHEKCIG THE BANK FILRER INFP = $bankFilterInfo")
                 _bankUIState.update {
                     it.copy(
                         bankDetailSearchQuery = bankUIEvent.query, bankFilterInfo = bankFilterInfo)
@@ -333,6 +336,7 @@ class BankDetailViewModel(
             }
 
             is BankUIEvent.OnClearAllFilter -> {
+                Log.d("CHECKCLEARFILTER","CHEKCIT THE CLEAR FILTER = OnClearAllFilter::  $")
                 clearAllFilter()
             }
 
@@ -427,6 +431,7 @@ class BankDetailViewModel(
             }
 
             is BankUIEvent.OnScreenTypeChanged -> {
+                Log.d("CHECKCLEARFILTER","CHEKCIT THE CLEAR FILTER = OnScreenTypeChanged::  $")
                 _bankUIState.update {
                     it.copy(selectedScreenType = bankUIEvent.screenType)
                 }
@@ -437,6 +442,7 @@ class BankDetailViewModel(
     }
 
     fun clearAllFilter() {
+        Log.d("CHECKCLEARFILTER","CHEKCIT THE CLEAR FILTER = clearAllFilter::  $")
         val bankFilterInfo = BankFilterInfo()
         _bankUIState.update {
             it.copy(selectedFilterTypeSet = setOf(), bankFilterInfo = bankFilterInfo)

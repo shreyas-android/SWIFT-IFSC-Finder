@@ -65,7 +65,7 @@ public class BankQueries(
   }
 
   public fun <T : Any> getBankListByOffset(
-    bankName: String,
+    query: String,
     limit: Long,
     offset: Long,
     mapper: (
@@ -81,7 +81,7 @@ public class BankQueries(
       isSwiftCodeFetched: Boolean,
       isListFetched: Boolean,
     ) -> T,
-  ): Query<T> = GetBankListByOffsetQuery(bankName, limit, offset) { cursor ->
+  ): Query<T> = GetBankListByOffsetQuery(query, limit, offset) { cursor ->
     mapper(
       cursor.getString(0)!!,
       cursor.getString(1)!!,
@@ -98,15 +98,15 @@ public class BankQueries(
   }
 
   public fun getBankListByOffset(
-    bankName: String,
+    query: String,
     limit: Long,
     offset: Long,
-  ): Query<Banks> = getBankListByOffset(bankName, limit, offset) { id, bankName_, bankType,
-      bankCode, priority, minSavingsInterest, maxSavingsInterest, isEnabled, offset_,
-      isSwiftCodeFetched, isListFetched ->
+  ): Query<Banks> = getBankListByOffset(query, limit, offset) { id, bankName, bankType, bankCode,
+      priority, minSavingsInterest, maxSavingsInterest, isEnabled, offset_, isSwiftCodeFetched,
+      isListFetched ->
     Banks(
       id,
-      bankName_,
+      bankName,
       bankType,
       bankCode,
       priority,
@@ -199,7 +199,7 @@ public class BankQueries(
   }
 
   private inner class GetBankListByOffsetQuery<out T : Any>(
-    public val bankName: String,
+    public val query: String,
     public val limit: Long,
     public val offset: Long,
     mapper: (SqlCursor) -> T,
@@ -214,11 +214,12 @@ public class BankQueries(
 
     override fun <R> execute(mapper: (SqlCursor) -> QueryResult<R>): QueryResult<R> =
         driver.executeQuery(-185_505_359,
-        """SELECT * FROM Banks WHERE bankName LIKE '%' || ? || '%' ORDER BY priority LIMIT ? OFFSET ?""",
-        mapper, 3) {
-      bindString(0, bankName)
-      bindLong(1, limit)
-      bindLong(2, offset)
+        """SELECT * FROM Banks WHERE bankName LIKE '%' || ? || '%' OR bankCode LIKE '%' || ? || '%' ORDER BY priority LIMIT ? OFFSET ?""",
+        mapper, 4) {
+      bindString(0, query)
+      bindString(1, query)
+      bindLong(2, limit)
+      bindLong(3, offset)
     }
 
     override fun toString(): String = "bank.sq:getBankListByOffset"
