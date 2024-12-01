@@ -7,6 +7,10 @@ import com.jackson.shared.domain.bankdetail.data.model.BankInfo
 import com.jackson.shared.common.bankdetail.flow.CommonFlow
 import com.jackson.shared.data.bankdetail.data.model.BankFilterInfo
 import com.jackson.shared.data.bankdetail.data.model.SwiftCodeFilterInfo
+import database.GetBankSwiftByOffset
+import database.GetEnabledBankDetailsByOffset
+import database.GetFilteredBankDetails
+import database.GetFilteredBankSwift
 import migrations.BankDetail
 import migrations.BankSwift
 import migrations.Banks
@@ -26,9 +30,11 @@ interface BankDetailManager {
     suspend fun getBankInfoItems(): CommonFlow<List<BankInfo>>
 
 
-    suspend fun getBankDetailInfoItemsMap(): CommonFlow<Map<BankInfo, List<BankDetailInfo>>>
-
     suspend fun updateBankEnabled(isEnabled:Boolean, id:String)
+
+    suspend fun updateAllBankEnabled(isEnabled:Boolean)
+
+    suspend fun isAllBankSelected(): CommonFlow<Boolean>
 
     suspend fun updateBankOffset(offset:Long, id:String)
 
@@ -36,18 +42,17 @@ interface BankDetailManager {
 
      suspend fun updateBankListFetched(listFetched : Boolean, id : String)
 
-    fun getBankDetailsPagingSource() : PagingSource<Int, BankDetail>
+    fun getBankDetailsPagingSource() : PagingSource<Int, GetEnabledBankDetailsByOffset>
 
-    fun getBankSwiftCodePagingSource():PagingSource<Int, BankSwift>
+    fun getBankSwiftCodePagingSource():PagingSource<Int, GetBankSwiftByOffset>
 
     fun getBankInfoPagingSource(query:String) : PagingSource<Int, Banks>
 
     fun getFilteredBankDetailsPagingSource(
-            bankFilterInfo : BankFilterInfo) : PagingSource<Int, BankDetail>
+            bankFilterInfo : BankFilterInfo) : PagingSource<Int, GetFilteredBankDetails>
 
     fun getFilteredBankSwiftPagingSource(
-            swiftCodeFilterInfo : SwiftCodeFilterInfo) : PagingSource<Int, BankSwift>
+            swiftCodeFilterInfo : SwiftCodeFilterInfo) : PagingSource<Int, GetFilteredBankSwift>
 
-    suspend fun getFilteredBankDetails(bankFilterInfo : BankFilterInfo): CommonFlow<Map<BankInfo, List<BankDetailInfo>>>
 
 }

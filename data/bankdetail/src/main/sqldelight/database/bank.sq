@@ -14,6 +14,9 @@ SELECT count(*) FROM Banks WHERE isEnabled = 1;
 updateBankEnabled:
 UPDATE Banks SET isEnabled = ? WHERE id = ?;
 
+updateAllBankEnabled:
+UPDATE Banks SET isEnabled = ?;
+
 updateBankOffset:
 UPDATE Banks SET offset = ? WHERE id = ?;
 
@@ -22,6 +25,9 @@ UPDATE Banks SET isSwiftCodeFetched = ? WHERE id = ?;
 
 updateBankListFetched:
 UPDATE Banks SET isListFetched = ? WHERE id = ?;
+
+isAllBankSelected:
+SELECT * FROM Banks WHERE isEnabled = 0;
 
 
 

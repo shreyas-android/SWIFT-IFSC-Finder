@@ -4,6 +4,11 @@ import app.cash.paging.PagingSource
 import com.jackson.shared.common.bankdetail.flow.CommonFlow
 import com.jackson.shared.data.bankdetail.data.model.BankFilterInfo
 import com.jackson.shared.data.bankdetail.data.model.SwiftCodeFilterInfo
+import database.GetBankSwiftByOffset
+import database.GetEnabledBankDetailsByOffset
+import database.GetFilteredBankDetails
+import database.GetFilteredBankSwift
+import kotlinx.coroutines.flow.Flow
 import migrations.BankDetail
 import migrations.BankSwift
 import migrations.Banks
@@ -22,24 +27,22 @@ interface BankDataSource {
 
     suspend fun getBankInfoListByBankId(bankId:String): CommonFlow<List<BankDetail>>
 
-    suspend fun getBankInfoList(): CommonFlow<List<BankDetail>>
+    fun getBankDetailsPagingSource() : PagingSource<Int, GetEnabledBankDetailsByOffset>
 
-    suspend fun getBankSwiftCodeList(swiftCodeFilterInfo : SwiftCodeFilterInfo):List<BankSwift>
+    fun getBankSwiftCodePagingSource():PagingSource<Int, GetBankSwiftByOffset>
 
-    fun getBankDetailsPagingSource() : PagingSource<Int, BankDetail>
-
-    fun getBankSwiftCodePagingSource():PagingSource<Int, BankSwift>
-
-    fun getFilteredBankDetailsPagingSource(bankFilterInfo : BankFilterInfo) : PagingSource<Int, BankDetail>
+    fun getFilteredBankDetailsPagingSource(bankFilterInfo : BankFilterInfo) : PagingSource<Int, GetFilteredBankDetails>
 
     fun getFilteredBankSwiftPagingSource(
-            swiftCodeFilterInfo : SwiftCodeFilterInfo): PagingSource<Int, BankSwift>
+            swiftCodeFilterInfo : SwiftCodeFilterInfo): PagingSource<Int, GetFilteredBankSwift>
 
     fun getBankInfoPagingSource(query:String) : PagingSource<Int, Banks>
 
     suspend fun updateBankEnabled(isEnabled:Boolean, id:String)
 
-    suspend fun updateBankDetailEnabledByBankId(isEnabled:Boolean, id:String)
+    suspend fun isAllBankSelected(): CommonFlow<Boolean>
+
+    suspend fun updateAllBankEnabled(isEnabled : Boolean)
 
     suspend fun updateBankSwiftCodeByBankIFSCCode(swiftCode:String, ifscCode:String)
 
@@ -48,10 +51,5 @@ interface BankDataSource {
     suspend fun updateBankSwiftFetched(swiftFetched : Boolean, id : String)
 
     suspend fun updateBankListFetched(listFetched : Boolean, id : String)
-
-    suspend fun getFilteredBankDetails(
-            bankName : String, city : String, state : String, district : String, ifscCode : String,
-            bankCode : String): CommonFlow<List<BankDetail>>
-
 
 }

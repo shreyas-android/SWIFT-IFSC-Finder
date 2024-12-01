@@ -7,6 +7,8 @@ import com.jackson.shared.domain.bankdetail.data.model.BankInfo
 sealed class BankUIEvent {
 
     data class OnOpenDrawer(val shouldOpen:Boolean):BankUIEvent()
+
+    data class OnSelectAllBankChanged(val isChecked:Boolean):BankUIEvent()
     data class OnBankInfoEnableChanged(val bankInfo : BankInfo, val isEnabled:Boolean):BankUIEvent()
 
     data class OnSearchQueryChanged(val query:String):BankUIEvent()

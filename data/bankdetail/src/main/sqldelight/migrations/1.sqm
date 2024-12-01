@@ -1,0 +1,4 @@
+import kotlin.Boolean;
+
+ALTER TABLE BankSwift
+ADD isEnabled INTEGER AS Boolean DEFAULT 1 NOT NULL;

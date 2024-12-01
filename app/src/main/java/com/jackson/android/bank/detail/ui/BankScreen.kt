@@ -34,6 +34,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Close
@@ -128,11 +130,14 @@ fun BankScreen(
 
 
     ModalNavigationDrawer(drawerState = drawerState, modifier = Modifier, drawerContent = {
-        BankListDrawer(banks = bankInfoPagingItems, searchQuery = bankUIState.bankSearchQuery,
+        BankListDrawer(bankUIState.isAllBankSelected,
+            banks = bankInfoPagingItems, searchQuery = bankUIState.bankSearchQuery,
             onQueryChange = {
                 setEvent(BankUIEvent.OnBankSearchQueryChanged(it))
             }, onCheckChanged = { bankItem, isChecked ->
                 setEvent(BankUIEvent.OnBankInfoEnableChanged(bankItem, isChecked))
+            }, onSelectAllCheckChanged = {
+                setEvent(BankUIEvent.OnSelectAllBankChanged(it))
             })
     }) {
         androidx.compose.material3.Scaffold(modifier = Modifier.fillMaxWidth(), topBar = {
@@ -278,7 +283,6 @@ fun EmbeddedSearchBar(
                 modifier = Modifier
                     .fillMaxWidth()
                     .clickable {
-                        Log.d("CHECKSEARCHBAR","CHEKCIG THE SEARCH BAR = $isSearchActive and $selectedTypeList")
                         if(isSearchActive) {
                             focusRequester.requestFocus()
                         } else {
@@ -454,7 +458,6 @@ fun FilterChips(
         modifier : Modifier, screenType : ScreenType, filterList : List<Int> = BankProUtils.getAllFilterList(screenType),
         selectedFilterType : Set<Int>, onFilterSelected : (Int, Boolean) -> Unit) {
 
-    Log.d("CHECKFILTERTYPE","CHEKCITTNTHE FILTER TYPE = $selectedFilterType")
     val context = LocalContext.current
 
     FlowRow(modifier = modifier.padding(horizontal = 14.dp, vertical = 12.dp)) {
@@ -520,32 +523,68 @@ fun PagingBankContainer(
         modifier : Modifier, isSearch : Boolean, bankDetailItems : LazyPagingItems<ItemBankData>,
         onItemClick : (BankDetailInfo) -> Unit, onGetSwiftCodeClick : (BankDetailInfo) -> Unit) {
 
-    LazyColumn(modifier = modifier) {
+    val collapsedSet = remember(bankDetailItems) {
+        mutableStateOf(setOf<String>())
+    }
 
-        for(index in 0 until bankDetailItems.itemCount) {
-            when(val itemBankData = bankDetailItems.peek(index)) {
-                is ItemBankData.Header -> stickyHeader {
-                    Box(
-                        modifier = Modifier
-                            .background(
-                                SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor)
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 8.dp)) {
-                        Text(
-                            text = itemBankData.bankName, fontSize = 16.sp,
-                            color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,
-                            modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Medium)
+    if(bankDetailItems.itemCount == 0) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(text = stringResource(id = R.string.desc_no_banks),
+                fontSize = 16.sp, color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor)
+        }
+    }else {
+        LazyColumn(modifier = modifier) {
+            for(index in 0 until bankDetailItems.itemCount) {
+                when(val itemBankData = bankDetailItems.peek(index)) {
+                    is ItemBankData.Header -> stickyHeader {
+                        Row(
+                            modifier = Modifier
+                                .clickable {
+                                    val hashSet = collapsedSet.value.toMutableSet()
+                                    if(hashSet.contains(itemBankData.bankId)) {
+                                        hashSet.remove(itemBankData.bankId)
+                                    } else {
+                                        hashSet.add(itemBankData.bankId)
+                                    }
+
+                                    collapsedSet.value = hashSet
+                                }
+                                .background(
+                                    SAndroidUITheme.colors.sAndroidUIBackgroundColors.backgroundColor)
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp, vertical = 8.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = itemBankData.bankName, fontSize = 16.sp,
+                                color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor,
+                                modifier = Modifier.padding(6.dp), fontWeight = FontWeight.Medium)
+
+                            Box {
+                                val icon = if(collapsedSet.value.contains(itemBankData.bankId)) {
+                                    Icons.Default.KeyboardArrowDown
+                                } else {
+                                    Icons.Default.KeyboardArrowUp
+                                }
+
+                                Icon(
+                                    imageVector = icon, contentDescription = "",
+                                    tint = SAndroidUITheme.colors.sAndroidUIIconColors.iconColor)
+                            }
+                        }
                     }
-                }
 
-                is ItemBankData.Detail -> item {
-                    BankDetailInfoCard(
-                        bankDetailInfo = itemBankData.bankDetailInfo, onItemClick,
-                        onGetSwiftCodeClick)
-                }
+                    is ItemBankData.Detail -> item {
+                        if(!collapsedSet.value.contains(itemBankData.bankDetailInfo.bankId)) {
+                            BankDetailInfoCard(
+                                bankDetailInfo = itemBankData.bankDetailInfo, onItemClick,
+                                onGetSwiftCodeClick)
+                        }
+                    }
 
-                null -> {
+                    null -> {
 
+                    }
                 }
             }
         }
@@ -627,7 +666,9 @@ fun BankDetailInfoCard(
 
 @Composable
 fun BankListDrawer(
+        isSelectAllEnabled:Boolean,
         searchQuery : String, banks : LazyPagingItems<BankInfo>,
+        onSelectAllCheckChanged:(Boolean) ->Unit,
         onCheckChanged : (BankInfo, Boolean) -> Unit, onQueryChange : (String) -> Unit) {
     ModalDrawerSheet(drawerContainerColor = SAndroidUITheme.colors.sAndroidUIBackgroundColors.sideSheetBackgroundColor) {
         Surface(color = SAndroidUITheme.colors.sAndroidUIBackgroundColors.sideSheetBackgroundColor) {
@@ -664,6 +705,23 @@ fun BankListDrawer(
                     }
                 } else {
                     LazyColumn(modifier = Modifier.padding(start = 16.dp)) {
+                        item {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                androidx.compose.material3.Checkbox(
+                                    checked = isSelectAllEnabled, onCheckedChange = {
+                                        onSelectAllCheckChanged(it)
+                                    }, modifier = Modifier, colors = CheckboxDefaults.colors(
+                                        checkedColor = SAndroidUITheme.colors.sAndroidUIOtherColors.checkBoxSelectedColor,
+                                        uncheckedColor = SAndroidUITheme.colors.sAndroidUIOtherColors.checkBoxUnSelectedColor))
+
+                                Text(
+                                    "Select all", fontSize = 16.sp,
+                                    modifier = Modifier.padding(start = 8.dp),
+                                    textAlign = TextAlign.Start,
+                                    color = SAndroidUITheme.colors.sAndroidUITextColors.primaryTextColor)
+
+                            }
+                        }
                         items(banks) { item ->
                             if(item != null) {
                                 ConstraintLayout(modifier = Modifier

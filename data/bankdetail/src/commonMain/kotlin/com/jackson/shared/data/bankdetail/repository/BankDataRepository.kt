@@ -5,6 +5,10 @@ import com.jackson.shared.common.bankdetail.flow.CommonFlow
 import com.jackson.shared.data.bankdetail.BankDataCore
 import com.jackson.shared.data.bankdetail.data.model.BankFilterInfo
 import com.jackson.shared.data.bankdetail.data.model.SwiftCodeFilterInfo
+import database.GetBankSwiftByOffset
+import database.GetEnabledBankDetailsByOffset
+import database.GetFilteredBankDetails
+import database.GetFilteredBankSwift
 import migrations.BankDetail
 import migrations.BankSwift
 import migrations.Banks
@@ -27,13 +31,15 @@ interface BankDataRepository{
 
     suspend fun getBankDetailItemsByBankId(bankId:String): CommonFlow<List<BankDetail>>
 
-    suspend fun getBankDetailInfoList(): CommonFlow<List<BankDetail>>
 
     suspend fun updateBankEnabled(isEnabled:Boolean, id:String)
 
-    suspend fun updateBankDetailEnabledByBankId(isEnabled:Boolean, id:String)
+    suspend fun updateAllBankEnabled(isEnabled : Boolean)
+
+    suspend fun isAllBankSelected(): CommonFlow<Boolean>
 
     suspend fun updateBankSwiftCodeByBankIFSCCode(swiftCode:String, ifscCode:String)
+
 
     suspend fun updateBankOffset(offset:Long, id:String)
 
@@ -41,18 +47,15 @@ interface BankDataRepository{
 
     suspend fun updateBankListFetched(listFetched : Boolean, id : String)
 
-    fun getBankDetailsPagingSource() : PagingSource<Int, BankDetail>
+    fun getBankDetailsPagingSource() : PagingSource<Int, GetEnabledBankDetailsByOffset>
 
-    fun getBankSwiftCodePagingSource():PagingSource<Int, BankSwift>
+    fun getBankSwiftCodePagingSource():PagingSource<Int, GetBankSwiftByOffset>
 
     fun getBankInfoPagingSource(query:String) : PagingSource<Int, Banks>
 
-    fun getFilteredBankDetailsPagingSource(bankFilterInfo : BankFilterInfo) : PagingSource<Int, BankDetail>
+    fun getFilteredBankDetailsPagingSource(bankFilterInfo : BankFilterInfo) : PagingSource<Int, GetFilteredBankDetails>
 
     fun getFilteredBankSwiftPagingSource(
-            swiftCodeFilterInfo : SwiftCodeFilterInfo): PagingSource<Int, BankSwift>
+            swiftCodeFilterInfo : SwiftCodeFilterInfo): PagingSource<Int, GetFilteredBankSwift>
 
-    suspend fun getFilteredBankDetails(
-            bankName : String, city : String, state : String, district : String, ifscCode : String,
-            bankCode : String): CommonFlow<List<BankDetail>>
 }

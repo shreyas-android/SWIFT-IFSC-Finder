@@ -7,6 +7,10 @@ import com.jackson.shared.data.bankdetail.data.model.BankFilterInfo
 import com.jackson.shared.data.bankdetail.data.model.SwiftCodeFilterInfo
 
 import com.jackson.shared.data.bankdetail.datasource.BankDataSource
+import database.GetBankSwiftByOffset
+import database.GetEnabledBankDetailsByOffset
+import database.GetFilteredBankDetails
+import database.GetFilteredBankSwift
 import migrations.BankDetail
 import migrations.BankSwift
 import migrations.Banks
@@ -37,15 +41,11 @@ class BankDataRepositoryImpl(private val dataSource : BankDataSource): BankDataR
         return dataSource.getBankInfoListByBankId(bankId)
     }
 
-    override suspend fun getBankDetailInfoList() : CommonFlow<List<BankDetail>> {
-        return dataSource.getBankInfoList()
-    }
-
-    override fun getBankDetailsPagingSource() : PagingSource<Int, BankDetail>{
+    override fun getBankDetailsPagingSource() : PagingSource<Int, GetEnabledBankDetailsByOffset> {
         return dataSource.getBankDetailsPagingSource()
     }
 
-    override fun getBankSwiftCodePagingSource() : PagingSource<Int, BankSwift> {
+    override fun getBankSwiftCodePagingSource() : PagingSource<Int, GetBankSwiftByOffset> {
         return dataSource.getBankSwiftCodePagingSource()
     }
 
@@ -54,12 +54,12 @@ class BankDataRepositoryImpl(private val dataSource : BankDataSource): BankDataR
     }
 
     override fun getFilteredBankDetailsPagingSource(
-            bankFilterInfo : BankFilterInfo) : PagingSource<Int, BankDetail> {
+            bankFilterInfo : BankFilterInfo) : PagingSource<Int, GetFilteredBankDetails> {
         return dataSource.getFilteredBankDetailsPagingSource(bankFilterInfo)
     }
 
     override fun getFilteredBankSwiftPagingSource(
-            swiftCodeFilterInfo : SwiftCodeFilterInfo) : PagingSource<Int, BankSwift> {
+            swiftCodeFilterInfo : SwiftCodeFilterInfo) : PagingSource<Int, GetFilteredBankSwift> {
         return dataSource.getFilteredBankSwiftPagingSource(swiftCodeFilterInfo)
     }
 
@@ -67,13 +67,20 @@ class BankDataRepositoryImpl(private val dataSource : BankDataSource): BankDataR
         return dataSource.updateBankEnabled(isEnabled, id)
     }
 
-    override suspend fun updateBankDetailEnabledByBankId(isEnabled : Boolean, id : String) {
-        return dataSource.updateBankDetailEnabledByBankId(isEnabled, id)
+    override suspend fun updateAllBankEnabled(isEnabled : Boolean) {
+        return dataSource.updateAllBankEnabled(isEnabled)
     }
+
+    override suspend fun isAllBankSelected() : CommonFlow<Boolean> {
+        return dataSource.isAllBankSelected()
+    }
+
 
     override suspend fun updateBankSwiftCodeByBankIFSCCode(swiftCode : String, ifscCode : String) {
         return dataSource.updateBankSwiftCodeByBankIFSCCode(swiftCode, ifscCode)
     }
+
+
 
     override suspend fun updateBankOffset(offset : Long, id : String) {
         return dataSource.updateBankOffset(offset, id)
@@ -86,13 +93,6 @@ class BankDataRepositoryImpl(private val dataSource : BankDataSource): BankDataR
     override suspend fun updateBankListFetched(listFetched : Boolean, id : String) {
         return dataSource.updateBankListFetched(listFetched, id)
     }
-
-    override suspend fun getFilteredBankDetails(
-            bankName : String, city : String, state : String, district : String, ifscCode : String,
-            bankCode : String): CommonFlow<List<BankDetail>> {
-        return dataSource.getFilteredBankDetails(bankName, city, state, district, ifscCode, bankCode)
-    }
-
 
 
 }

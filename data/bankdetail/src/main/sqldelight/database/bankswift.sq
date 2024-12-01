@@ -3,24 +3,20 @@ INSERT OR REPLACE INTO BankSwift (bankId, bankName, city, country, countryCode, 
 VALUES (?, ?, ?, ?, ?, ?, ?);
 
 getBankSwiftByOffset:
-SELECT * FROM BankSwift LIMIT :limit OFFSET :offset;
+SELECT swift.bankId, swift.swiftCode, swift.branch, swift.bankName, swift.country, swift.city, swift.branch, swift.countryCode,
+banks.isEnabled FROM BankSwift AS swift INNER JOIN Banks AS banks WHERE bankId = banks.id AND banks.isEnabled = 1  ORDER BY bankId LIMIT :limit OFFSET :offset;
 
 countBankSwift:
-SELECT count(*) FROM BankSwift;
-
-getSwiftCodeForBank:
-SELECT * FROM BankSwift WHERE bankName LIKE '%' || :bankName || '%' AND lower(city) LIKE '%' || :city || '%'
-AND lower(branch) LIKE '%' || :branch || '%' AND lower(country) LIKE '%' || :country || '%';
-
+SELECT count(*) FROM BankSwift INNER JOIN Banks AS banks WHERE bankId = banks.id AND banks.isEnabled = 1;
 
 
 getFilteredBankSwift:
-SELECT * FROM BankSwift WHERE bankName LIKE '%' || :bankName || '%' AND lower(city) LIKE '%' || :city || '%'
-AND lower(branch) LIKE '%' || :branch || '%' AND lower(country) LIKE '%' || :country || '%'  AND lower(swiftCode) LIKE '%' || :swiftcode || '%'  LIMIT :limit OFFSET :offset;
+SELECT swift.bankId, swift.swiftCode, swift.branch, swift.bankName, swift.country, swift.city, swift.branch, swift.countryCode, banks.isEnabled FROM BankSwift AS swift INNER JOIN Banks AS banks WHERE bankId = banks.id AND banks.isEnabled = 1 AND swift.bankName LIKE '%' || :bankName || '%' AND lower(swift.city) LIKE '%' || :city || '%'
+AND lower(swift.branch) LIKE '%' || :branch || '%' AND lower(swift.country) LIKE '%' || :country || '%'  AND lower(swift.swiftCode) LIKE '%' || :swiftcode || '%' ORDER BY swift.bankId  LIMIT :limit OFFSET :offset;
 
 
 countFilteredBankDetails:
-SELECT count(*) FROM BankSwift WHERE bankName LIKE '%' || :bankName || '%' AND lower(city) LIKE '%' || :city || '%'
-                                AND lower(branch) LIKE '%' || :branch || '%' AND lower(country) LIKE '%' || :country || '%'
-                                AND lower(swiftCode) LIKE '%' || :swiftcode || '%';
+SELECT count(*) FROM BankSwift AS swift INNER JOIN Banks AS banks WHERE bankId = banks.id AND banks.isEnabled = 1 AND swift.bankName LIKE '%' || :bankName || '%' AND lower(swift.city) LIKE '%' || :city || '%'
+                                AND lower(swift.branch) LIKE '%' || :branch || '%' AND lower(swift.country) LIKE '%' || :country || '%'
+                                AND lower(swift.swiftCode) LIKE '%' || :swiftcode || '%';
 

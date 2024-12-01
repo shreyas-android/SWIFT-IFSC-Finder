@@ -24,31 +24,32 @@ VALUES (?, ?, ?, ?, ?, ?, ?,?,?,?,?,?,?,?,?,?,?,?,?,?);
 getBankDetailByBank:
 SELECT * FROM BankDetail WHERE bankId = :bankId;
 
-getEnabledBankDetails:
-SELECT * FROM BankDetail WHERE isEnabled = 1;
-
 getEnabledBankDetailsByOffset:
-SELECT * FROM BankDetail WHERE isEnabled = 1 ORDER BY priority LIMIT :limit OFFSET :offset;
-
+SELECT detail.bankId, detail.branch, detail.city, detail.bankName, detail.swiftCode, detail.priority,
+detail.IFSCCode, detail.address, detail.bankCode, detail.centre, detail.contact, detail.bankCode,
+detail.state, detail.district, detail.ISO3166, detail.MICR,detail.priority, detail.isSupportUPI,
+detail.isSupportNEFT,detail.isSupportRTGS, detail.isSupportIMPS, banks.isEnabled FROM BankDetail AS detail INNER JOIN Banks AS banks WHERE detail.bankId = banks.id AND banks.isEnabled = 1 ORDER BY detail.priority, detail.bankId LIMIT :limit OFFSET :offset;
 
 countBankDetails:
-SELECT count(*) FROM BankDetail WHERE isEnabled = 1;
-
-countFilteredBankDetails:
-SELECT count(*) FROM BankDetail WHERE isEnabled = 1 AND bankName LIKE '%' || :bankName || '%' AND city LIKE '%' || :city || '%'
- AND state LIKE '%' || :state || '%' AND district LIKE '%' || :district || '%' AND IFSCCode LIKE '%' || :ifscCode || '%'
- AND bankCode LIKE '%' || :bankCode || '%' AND branch LIKE '%' || :branch || '%' ;
-
-updateBankEnabled:
-UPDATE BankDetail SET isEnabled = ? WHERE bankId = ?;
+SELECT count(*) FROM BankDetail  INNER JOIN Banks AS banks WHERE bankId = banks.id AND banks.isEnabled = 1;
 
 updateBankSwiftCode:
 UPDATE BankDetail SET swiftCode = ? WHERE IFSCCode = ?;
 
+
+countFilteredBankDetails:
+SELECT count(*) FROM BankDetail AS detail INNER JOIN Banks AS banks WHERE bankId = banks.id AND banks.isEnabled = 1  AND detail.bankName LIKE '%' || :bankName || '%' AND detail.city LIKE '%' || :city || '%'
+ AND detail.state LIKE '%' || :state || '%' AND detail.district LIKE '%' || :district || '%' AND detail.IFSCCode LIKE '%' || :ifscCode || '%'
+ AND detail.bankCode LIKE '%' || :bankCode || '%' AND detail.branch LIKE '%' || :branch || '%' ;
+
+
 getFilteredBankDetails:
-SELECT * FROM BankDetail WHERE isEnabled = 1 AND bankName LIKE '%' || :bankName || '%' AND city LIKE '%' || :city || '%'
- AND state LIKE '%' || :state || '%' AND district LIKE '%' || :district || '%' AND IFSCCode LIKE '%' || :ifscCode || '%'
- AND bankCode LIKE '%' || :bankCode || '%' AND branch LIKE '%' || :branch || '%' ORDER BY priority  LIMIT :limit OFFSET :offset;
+SELECT detail.bankId, detail.branch, detail.city, detail.bankName, detail.swiftCode, detail.priority,
+       detail.IFSCCode, detail.address, detail.bankCode, detail.centre, detail.contact, detail.bankCode,
+       detail.state, detail.district, detail.ISO3166, detail.MICR,detail.priority, detail.isSupportUPI,
+       detail.isSupportNEFT,detail.isSupportRTGS, detail.isSupportIMPS, banks.isEnabled FROM BankDetail AS detail INNER JOIN Banks AS banks WHERE bankId = banks.id AND banks.isEnabled = 1  AND detail.bankName LIKE '%' || :bankName || '%' AND detail.city LIKE '%' || :city || '%'
+ AND detail.state LIKE '%' || :state || '%' AND detail.district LIKE '%' || :district || '%' AND detail.IFSCCode LIKE '%' || :ifscCode || '%'
+ AND detail.bankCode LIKE '%' || :bankCode || '%' AND detail.branch LIKE '%' || :branch || '%'  ORDER BY detail.priority,detail.bankId  LIMIT :limit OFFSET :offset;
 
 
 

@@ -65,7 +65,6 @@ class MainActivity:AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        println(sharedPref.all)
         if(!sharedPref.getBoolean(PREF_INITIAL_DATA_SYNC, false)) {
             bankDetailViewModel.updateBankFromRemote {
                 sharedPreferenceEditor.putBoolean(PREF_INITIAL_DATA_SYNC, true).commit()

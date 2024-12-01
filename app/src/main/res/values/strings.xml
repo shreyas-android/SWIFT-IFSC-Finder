@@ -12,6 +12,8 @@
     <string name="title_banks">Banks</string>
     <string name="desc_no_results">No results found</string>
 
+    <string name="desc_no_banks">No banks</string>
+
     <string name="title_swift_code">Swift code</string>
 
     <string name="desc_back_button">Back button</string>

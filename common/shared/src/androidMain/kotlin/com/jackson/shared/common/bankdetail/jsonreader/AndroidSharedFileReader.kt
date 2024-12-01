@@ -12,7 +12,6 @@ class AndroidSharedFileReader(private val context : Context):SharedFileReader{
 
         val pathName = "commonMain/resources/$fileName"
         val stream = javaClass.classLoader?.getResourceAsStream(pathName)
-        Log.d("CHECKSTREAMDATA","CHEKCIG THE STREAM DATA = $stream")
         return stream.use { stream ->
             InputStreamReader(stream).use { reader ->
                 reader.readText()

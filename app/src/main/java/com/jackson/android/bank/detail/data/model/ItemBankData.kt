@@ -6,5 +6,5 @@ sealed class ItemBankData {
 
     data class Detail(val bankDetailInfo : BankDetailInfo):ItemBankData()
 
-    data class Header(val bankName : String):ItemBankData()
+    data class Header(val bankId:String, val bankName : String):ItemBankData()
 }

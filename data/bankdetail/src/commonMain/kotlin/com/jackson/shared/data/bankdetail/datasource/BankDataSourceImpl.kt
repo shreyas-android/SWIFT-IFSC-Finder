@@ -1,8 +1,10 @@
 package com.jackson.shared.data.bankdetail.datasource
 
 import app.cash.paging.PagingSource
+import app.cash.sqldelight.Query
 import app.cash.sqldelight.coroutines.asFlow
 import app.cash.sqldelight.coroutines.mapToList
+import app.cash.sqldelight.db.QueryResult
 import com.jackson.shared.common.bankdetail.flow.CommonFlow
 import com.jackson.shared.common.bankdetail.flow.toCommonFlow
 import database.BankQueries
@@ -16,6 +18,12 @@ import app.cash.sqldelight.paging3.QueryPagingSource
 import com.jackson.shared.data.bankdetail.data.model.BankFilterInfo
 import com.jackson.shared.data.bankdetail.data.model.SwiftCodeFilterInfo
 import database.BankswiftQueries
+import database.GetBankSwiftByOffset
+import database.GetEnabledBankDetailsByOffset
+import database.GetFilteredBankDetails
+import database.GetFilteredBankSwift
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import migrations.BankSwift
 
 class BankDataSourceImpl(
@@ -65,19 +73,6 @@ class BankDataSourceImpl(
             .toCommonFlow()
     }
 
-    override suspend fun getBankInfoList() : CommonFlow<List<BankDetail>> {
-        return bankDetailQueries.getEnabledBankDetails().asFlow().mapToList(dispatcher)
-            .toCommonFlow()
-    }
-
-    override suspend fun getBankSwiftCodeList(
-            swiftCodeFilterInfo : SwiftCodeFilterInfo) : List<BankSwift> {
-        return bankSwiftQueries.getSwiftCodeForBank(
-            swiftCodeFilterInfo.bankName, swiftCodeFilterInfo.city.lowercase(),
-            swiftCodeFilterInfo.branch.lowercase(), swiftCodeFilterInfo.country.lowercase())
-            .executeAsList()
-    }
-
     override fun getBankInfoPagingSource(query : String) : PagingSource<Int, Banks> {
         return QueryPagingSource(countQuery = bankQueries.countBanks(), transacter = bankQueries,
             context = Dispatchers.IO, queryProvider = { limit, offset ->
@@ -85,7 +80,7 @@ class BankDataSourceImpl(
             })
     }
 
-    override fun getBankDetailsPagingSource() : PagingSource<Int, BankDetail> {
+    override fun getBankDetailsPagingSource() : PagingSource<Int, GetEnabledBankDetailsByOffset> {
         return QueryPagingSource(countQuery = bankDetailQueries.countBankDetails(),
             transacter = bankDetailQueries, context = Dispatchers.IO,
             queryProvider = { limit, offset ->
@@ -93,7 +88,7 @@ class BankDataSourceImpl(
             })
     }
 
-    override fun getBankSwiftCodePagingSource() : PagingSource<Int, BankSwift> {
+    override fun getBankSwiftCodePagingSource() : PagingSource<Int, GetBankSwiftByOffset> {
         return QueryPagingSource(countQuery = bankSwiftQueries.countBankSwift(),
             transacter = bankSwiftQueries, context = Dispatchers.IO,
             queryProvider = { limit, offset ->
@@ -102,7 +97,7 @@ class BankDataSourceImpl(
     }
 
     override fun getFilteredBankDetailsPagingSource(
-            bankFilterInfo : BankFilterInfo) : PagingSource<Int, BankDetail> {
+            bankFilterInfo : BankFilterInfo) : PagingSource<Int, GetFilteredBankDetails> {
         return QueryPagingSource(countQuery = bankDetailQueries.countFilteredBankDetails(
             bankFilterInfo.bankName, bankCode = bankFilterInfo.bankCode, city = bankFilterInfo.city,
             ifscCode = bankFilterInfo.ifscCode, district = bankFilterInfo.district,
@@ -118,12 +113,12 @@ class BankDataSourceImpl(
     }
 
     override fun getFilteredBankSwiftPagingSource(
-            swiftCodeFilterInfo : SwiftCodeFilterInfo) : PagingSource<Int, BankSwift> {
+            swiftCodeFilterInfo : SwiftCodeFilterInfo) : PagingSource<Int, GetFilteredBankSwift> {
         return QueryPagingSource(countQuery = bankSwiftQueries.countFilteredBankDetails(
             swiftCodeFilterInfo.bankName, city = swiftCodeFilterInfo.city,
-            branch = swiftCodeFilterInfo.branch, country = swiftCodeFilterInfo.country, swiftcode = swiftCodeFilterInfo.swiftCode),
-            transacter = bankDetailQueries, context = Dispatchers.IO,
-            queryProvider = { limit, offset ->
+            branch = swiftCodeFilterInfo.branch, country = swiftCodeFilterInfo.country,
+            swiftcode = swiftCodeFilterInfo.swiftCode), transacter = bankDetailQueries,
+            context = Dispatchers.IO, queryProvider = { limit, offset ->
                 bankSwiftQueries.getFilteredBankSwift(
                     swiftCodeFilterInfo.bankName, city = swiftCodeFilterInfo.city,
                     branch = swiftCodeFilterInfo.branch, country = swiftCodeFilterInfo.country,
@@ -136,8 +131,14 @@ class BankDataSourceImpl(
         return bankQueries.updateBankEnabled(isEnabled, id)
     }
 
-    override suspend fun updateBankDetailEnabledByBankId(isEnabled : Boolean, id : String) {
-        return bankDetailQueries.updateBankEnabled(isEnabled, id)
+    override suspend fun isAllBankSelected() : CommonFlow<Boolean> {
+        return bankQueries.isAllBankSelected().asFlow().mapToList(dispatcher).map {
+            it.isEmpty()
+        }.toCommonFlow()
+    }
+
+    override suspend fun updateAllBankEnabled(isEnabled : Boolean) {
+        return bankQueries.updateAllBankEnabled(isEnabled)
     }
 
     override suspend fun updateBankSwiftCodeByBankIFSCCode(swiftCode : String, ifscCode : String) {
@@ -154,14 +155,6 @@ class BankDataSourceImpl(
 
     override suspend fun updateBankListFetched(listFetched : Boolean, id : String) {
         return bankQueries.updateBankListFetched(listFetched, id)
-    }
-
-    override suspend fun getFilteredBankDetails(
-            bankName : String, city : String, state : String, district : String, ifscCode : String,
-            bankCode : String) : CommonFlow<List<BankDetail>> {
-        return bankDetailQueries
-            .getFilteredBankDetails(bankName, city, state, district, ifscCode, bankCode, "", 100, 0)
-            .asFlow().mapToList(dispatcher).toCommonFlow()
     }
 
 }

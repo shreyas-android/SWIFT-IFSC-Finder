@@ -23,6 +23,10 @@ import com.jackson.shared.domain.bankdetail.data.mapper.toBankDetailInfo
 import com.jackson.shared.domain.bankdetail.data.mapper.toBankInfo
 import com.jackson.shared.domain.bankdetail.data.model.BankDetailInfo
 import com.jackson.shared.domain.bankdetail.manager.BankDetailManager
+import database.GetBankSwiftByOffset
+import database.GetEnabledBankDetailsByOffset
+import database.GetFilteredBankDetails
+import database.GetFilteredBankSwift
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -31,6 +35,7 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -74,14 +79,14 @@ class BankDetailViewModel(
     }
 
     private val bankDetailPager by lazy {
-        Pager(config = PagingConfig(100, prefetchDistance = 20, enablePlaceholders = true),
+        Pager(config = PagingConfig(500, prefetchDistance = 100, enablePlaceholders = true),
             pagingSourceFactory = {
                 getBankDetailsPagingSource()
             })
     }
 
     private val filterBankDetailPager by lazy {
-        Pager(config = PagingConfig(100, prefetchDistance = 20), pagingSourceFactory = {
+        Pager(config = PagingConfig(500, prefetchDistance = 100), pagingSourceFactory = {
             getFilteredBankDetailsPagingSource()
         })
     }
@@ -143,10 +148,21 @@ class BankDetailViewModel(
         }.insertSeparators { detail : ItemBankData.Detail?, detail2 : ItemBankData.Detail? ->
             if(detail?.bankDetailInfo?.bankId != detail2?.bankDetailInfo?.bankId) {
                 ItemBankData.Header(
+                    detail2?.bankDetailInfo?.bankId?:"",
                     detail2?.bankDetailInfo?.bankName
                         ?: "")
             } else {
                 detail
+            }
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            bankDetailManager.isAllBankSelected().collectLatest { isAllBankSelected ->
+                _bankUIState.update {
+                    it.copy(isAllBankSelected = isAllBankSelected)
+                }
             }
         }
     }
@@ -185,7 +201,6 @@ class BankDetailViewModel(
         if(bankDetailRemoteJob == null) {
             bankDetailRemoteJob = backgroundScope.launch {
                 bankDetailManager.updateBankPagingFromRemote(isRefresh) {
-                    Log.d("CHECKBANKLOADED", "CHEKCIG THE BANK LOADED = $")
                     _bankUIState.update {
                         it.copy(isSyncing = false)
                     }
@@ -196,7 +211,7 @@ class BankDetailViewModel(
         }
     }
 
-    private fun getBankDetailsPagingSource() : PagingSource<Int, BankDetail> {
+    private fun getBankDetailsPagingSource() : PagingSource<Int, GetEnabledBankDetailsByOffset> {
         val pagingSource = bankDetailManager.getBankDetailsPagingSource()
         shouldRefreshBankDetail = {
             pagingSource.invalidate()
@@ -204,7 +219,7 @@ class BankDetailViewModel(
         return pagingSource
     }
 
-    private fun getBankSwiftPagingSource() : PagingSource<Int, BankSwift> {
+    private fun getBankSwiftPagingSource() : PagingSource<Int, GetBankSwiftByOffset> {
         val pagingSource = bankDetailManager.getBankSwiftCodePagingSource()
         return pagingSource
 
@@ -219,7 +234,7 @@ class BankDetailViewModel(
         return pagingSource
     }
 
-    private fun getFilteredBankDetailsPagingSource() : PagingSource<Int, BankDetail> {
+    private fun getFilteredBankDetailsPagingSource() : PagingSource<Int, GetFilteredBankDetails> {
         val filterPagingSource =
             bankDetailManager.getFilteredBankDetailsPagingSource(bankFilterInfoFlow.value)
 
@@ -230,7 +245,7 @@ class BankDetailViewModel(
         return filterPagingSource
     }
 
-    private fun getFilteredBankSwiftPagingSource() : PagingSource<Int, BankSwift> {
+    private fun getFilteredBankSwiftPagingSource() : PagingSource<Int, GetFilteredBankSwift> {
         val filterPagingSource =
             bankDetailManager.getFilteredBankSwiftPagingSource(swiftCodeFilterInfoFlow.value)
 
@@ -243,6 +258,12 @@ class BankDetailViewModel(
 
     fun setEvent(bankUIEvent : BankUIEvent) {
         when(bankUIEvent) {
+
+            is BankUIEvent.OnSelectAllBankChanged -> {
+                viewModelScope.launch {
+                    bankDetailManager.updateAllBankEnabled(bankUIEvent.isChecked)
+                }
+            }
             is BankUIEvent.OnBankInfoEnableChanged -> {
                 viewModelScope.launch {
                     bankDetailManager.updateBankEnabled(
@@ -264,7 +285,6 @@ class BankDetailViewModel(
             is BankUIEvent.OnSearchQueryChanged -> {
                 var bankFilterInfo = _bankUIState.value.bankFilterInfo
                 bankFilterInfo = bankFilterInfo.copy(bankName = bankUIEvent.query)
-                Log.d("CHECKBANKFILTERINFO", "CHEKCIG THE BANK FILRER INFP = $bankFilterInfo")
                 _bankUIState.update {
                     it.copy(
                         bankDetailSearchQuery = bankUIEvent.query, bankFilterInfo = bankFilterInfo)
@@ -336,7 +356,6 @@ class BankDetailViewModel(
             }
 
             is BankUIEvent.OnClearAllFilter -> {
-                Log.d("CHECKCLEARFILTER","CHEKCIT THE CLEAR FILTER = OnClearAllFilter::  $")
                 clearAllFilter()
             }
 
@@ -431,7 +450,6 @@ class BankDetailViewModel(
             }
 
             is BankUIEvent.OnScreenTypeChanged -> {
-                Log.d("CHECKCLEARFILTER","CHEKCIT THE CLEAR FILTER = OnScreenTypeChanged::  $")
                 _bankUIState.update {
                     it.copy(selectedScreenType = bankUIEvent.screenType)
                 }
@@ -441,8 +459,7 @@ class BankDetailViewModel(
         }
     }
 
-    fun clearAllFilter() {
-        Log.d("CHECKCLEARFILTER","CHEKCIT THE CLEAR FILTER = clearAllFilter::  $")
+    private fun clearAllFilter() {
         val bankFilterInfo = BankFilterInfo()
         _bankUIState.update {
             it.copy(selectedFilterTypeSet = setOf(), bankFilterInfo = bankFilterInfo)
